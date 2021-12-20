@@ -293,9 +293,42 @@ obtenerListaAccesos(ListaPermisos,[H|T], ListaPermisosPre, ListaResultante):-
 	obtenerListaAccesos(ListaPermisos, T, NewPermisosPre, ListaResultante).
 
 
-tienenPermisos(ListaPermisos, [H|T]), ListGuardado, ListResultado):-
+tienePoder([],_,ListaTemp,ListaResultante):-
+	(ListaTemp = ListaResultante).
 
-	
+tienePoder([H|_], User, ListaTemp, ListaResultante):-
+	car(H, Nombre),
+	(User == Nombre),
+	append([User], ListaTemp, ListaResultante).
+
+tienePoder([_|T], User, ListaTemp, ListaResultante):-
+	tienePoder(T, User, ListaTemp, ListaResultante).
+
+
+tienenPermisos(_,[],ListGuardado,ListResultado):-
+	(ListGuardado = ListResultado).
+
+tienenPermisos(ListaPermisos, [H|T], ListGuardado, ListResultado):-
+	tienePoder(ListaPermisos, H, ListGuardado, ListTemp),
+	tienenPermisos(ListaPermisos,T,ListTemp,ListResultado).
+
+
+borrarRepetidos(Accesses, [], AcccessesFinal):-
+	(Accesses = AcccessesFinal).
+
+borrarRepetidos(Accesses, [H|T], AccessesFinal):-
+	borrarPrimeraOcurrencia(H, Accesses, AccessesTemp),
+	borrarRepetidos(AccessesTemp, T, AccessesFinal).
+
+borrarDocDuplicado( Documento, [H|Resto], Resto ):-
+    (Documento == H).
+
+borrarDocDuplicado( Documento, [Cabeza|Resto], [Cabeza|Resultado] ) :-
+   % car(Cabeza,Nombre),
+	Documento\=Cabeza, % Elemento no es la cabeza de la lista
+	borrarDocDuplicado( Documento, Resto, Resultado ).
+
+
 borrarPrimeraOcurrencia( Elemento, [H|Resto], Resto ):-
     car(H,Nombre),
     (Elemento == Nombre).
@@ -410,7 +443,14 @@ paradigmaDocsShare(Sn1, DocumentId, ListaPermisos, ListaUsernamesPermitidos, Sn2
 	getHistorialDocumento(DocCompartir, HistorialDoc),
 	puedeCompartir(PermisosPre, UserActivo),
 	verificarPermisosValidos(ListaPermisos),
-	verificaListaUsuarios(Users,ListaUsernamesPermitidos),
+	verificarListaUsuarios(Users,ListaUsernamesPermitidos),
+	tienenPermisos(PermisosPre, ListaUsernamesPermitidos, [], TienenPermisos),
+	obtenerListaAccesos(ListaPermisos, ListaUsernamesPermitidos, PermisosPre, AccesesSinFiltro),
+	borrarRepetidos(AccesesSinFiltro, TienenPermisos, AccessesFinal),
+	(NewDocumento = [Autor,Date,Name,Contenido,AccessesFinal,HistorialDoc,DocumentId]),
+	borrarDocDuplicado(DocCompartir, Documents, NewDocuments),
+	append(NewDocuments, [NewDocumento], DocumentsFinal),
+	paradigmadocsActualizado(NamePdocs, DatePdocs, Users, [], DocumentsFinal, Sn2).
 
 
 
