@@ -206,7 +206,7 @@ documento(Autor,Date,Nombre,Contenido, IDDoc, DocFinal):-
 	getAnioFecha(Date,AAAA),
 	date(DD,MM,AAAA,Date),!,
 	historial(Date,Contenido,0, Hist1),
-	DocFinal = [Autor,Date,Nombre,Contenido,[],[Hist1],IDDoc].
+	DocFinal = [Autor,Date,Nombre,Contenido,[[Autor, "R", "W", "C", "S"]],[Hist1],IDDoc].
 
 % ----------------------------SELECTORES---------------------------------
 
@@ -236,7 +236,73 @@ getHistorialDocumento([_,_,_,_,_,HistorialList,_],HistorialList):-
 getIDDocumento([_,_,_,_,_,_,IDDoc],IDDoc):-
 	integer(IDDoc).
 
+encontrarPorIDDocumento([H|_],ID,Retorno):-
+    getIDDocumento(H,ID2),
+    (ID2 = ID),
+    H = Retorno.
 
+encontrarPorIDDocumento([_|T],ID,Retorno):-
+    encontrarPorIDDocumento(T,ID,Retorno).
+
+buscarPermiso([H|_],User,ListPermisos):-
+    car(H,Username),
+    (User = Username),
+	ListPermisos = H.
+buscarPermiso([_|T],User,ListPermisos):-
+    buscarPermiso(T,User,ListPermisos).
+
+car([H|_], H).
+cdr([_,T],T).
+
+verificarCompartir([H|_]):-
+	H = "S".
+verificarCompartir([_|T]):-
+	verificarCompartir(T).
+
+
+puedeCompartir(ListPermiso,UserActivo) :-
+	buscarPermiso(ListPermiso, UserActivo, PermisosUser),
+	verificarCompartir(PermisosUser), !.
+
+
+permisoValido(Permiso):-
+	(Permiso = "R"), !;
+	(Permiso = "W"), !;
+	(Permiso = "S"), !;
+	(Permiso = "C").
+
+verificarPermisosValidos([]).
+
+verificarPermisosValidos([H|T]):-
+	permisoValido(H),
+	verificarPermisosValidos(T).
+
+verificarListaUsuarios(_, []):- !.
+verificarListaUsuarios(UsersRegistrados, [H|T]):-
+	pertenece(H, UsersRegistrados),
+	verificarListaUsuarios(UsersRegistrados,T).
+
+
+
+obtenerListaAccesos(_,[],PermisosFinal,ListaResultante):-
+    ( PermisosFinal = ListaResultante).
+
+obtenerListaAccesos(ListaPermisos,[H|T], ListaPermisosPre, ListaResultante):-
+	append([H],ListaPermisos,ListaAcceses),
+	append(ListaPermisosPre,[ListaAcceses],NewPermisosPre),
+	obtenerListaAccesos(ListaPermisos, T, NewPermisosPre, ListaResultante).
+
+
+tienenPermisos(ListaPermisos, [H|T]), ListGuardado, ListResultado):-
+
+	
+borrarPrimeraOcurrencia( Elemento, [H|Resto], Resto ):-
+    car(H,Nombre),
+    (Elemento == Nombre).
+borrarPrimeraOcurrencia( Elemento, [Cabeza|Resto], [Cabeza|Resultado] ) :-
+   % car(Cabeza,Nombre),
+	Elemento\=Cabeza, % Elemento no es la cabeza de la lista
+	borrarPrimeraOcurrencia( Elemento, Resto, Resultado ).
 % -------------------------TDA ParadigmaDocs----------------------------------
 % ---------------------------REPRESENTACION-----------------------------------
 
@@ -296,7 +362,7 @@ paradigmaDocsRegister(Sn1, Fecha, Username, Password, Sn2):-
 	append(Users,[New],NewRegistrados),
 	paradigmadocsActualizado(NamePdocs, DatePdocs, NewRegistrados, Activo, Documents, Sn2).
 
-%
+% Comentar Dominio
 paradigmaDocsLogin(Sn1,Username,Password,Sn2):-
     string(Username),
     string(Password),
@@ -324,7 +390,32 @@ paradigmaDocsCreate(Sn1, Fecha, Nombre, Contenido, Sn2):-
 	append(Documents, [Doc], NewDocuments),
 	paradigmadocsActualizado(NamePdocs, DatePdocs, Users, [], NewDocuments, Sn2).
 
-%paradigmaDocsShare(Sn1, DocumentId, ListaPermisos, ListaUsernamesPermitidos)
+paradigmaDocsShare(Sn1, DocumentId, ListaPermisos, ListaUsernamesPermitidos, Sn2):-
+	integer(DocumentId),
+	is_list(ListaPermisos),
+	is_list(ListaUsernamesPermitidos),
+	getActivosPdocs(Sn1,Activo),
+	length(Activo,1),
+	getUserActivo(Activo,UserActivo),
+	getNombrePdocs(Sn1,NamePdocs),
+	getDatePdocs(Sn1,DatePdocs),
+	getRegistradosPdocs(Sn1,Users),
+	getDocumentosPdocs(Sn1,Documents),
+	encontrarPorIDDocumento(Documents,DocumentId,DocCompartir),
+	getAutorDocumento(DocCompartir,Autor),
+	getDateDocumento(DocCompartir,Date),
+	getNameDocumento(DocCompartir,Name),
+	getContenidoDocumento(DocCompartir,Contenido),
+	getPermisosDocumento(DocCompartir, PermisosPre),
+	getHistorialDocumento(DocCompartir, HistorialDoc),
+	puedeCompartir(PermisosPre, UserActivo),
+	verificarPermisosValidos(ListaPermisos),
+	verificaListaUsuarios(Users,ListaUsernamesPermitidos),
+
+
+
+
+
 	
 
 % date(20, 12, 2015, D1), paradigmaDocs("google docs", D1, PD1), paradigmaDocsRegister(PD1, D1, "vflores", "hola123", PD2).
