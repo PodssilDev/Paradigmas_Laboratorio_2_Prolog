@@ -75,7 +75,10 @@ getAnioFecha([DD,MM,AAAA],AAAA) :-
 % getUserDate([Date,Nombre,Password], Date)
 % getUserName([Date,Nombre,Password], Nombre)
 % getUserPass([Date,Nombre,Password], Password)
-
+% pertenece(Nombre,[[_,Nombre,_]|_])
+% pertenece(Nombre,[[_,_,_]|Resto])
+% buscarUsuarioPassword([H|_],Usuario,Password):
+% buscarUsuarioPassword([_|T],Usuario,Password)
 % ---------------------------REPRESENTACION-----------------------------------
 
 % El TDA User se representa a traves de una lista (date X string X string X list)
@@ -116,10 +119,16 @@ getUserPass([Date,Nombre,Password], Password):-
 	user(Date,Nombre,Password,[Date,Nombre,Password]).
 % ------------------------------OTROS PREDICADOS--------------------------
 
+% Dominio: Un Nombre (string) y un User
+% Descripcion: Caso base de pertenece. Si el nombre es igual al nombre del User
+% entonces el predicado da true.
+pertenece(Nombre,[[_,Nombre,_]|_]):- !.
 
-pertenece(NombreU,[[_,NombreU,_]|_]):- !.
-pertenece(NombreU,[[_,_,_]|L]):-
-            pertenece(NombreU,L).
+% Dominio: Un Nombre (string) y un User
+% Descripcion: Caso recursivo de pertenece. Busca al user tal que el nombre del User
+% sea igual al nombre ingresado como entrada.
+pertenece(Nombre,[[_,_,_]|Resto]):-
+            pertenece(Nombre,Resto).
 
 buscarUsuarioPassword([H|_],Usuario,Password):-
     getUserName(H,Username),
@@ -264,6 +273,14 @@ puedeCompartir(ListPermiso,UserActivo) :-
 	buscarPermiso(ListPermiso, UserActivo, PermisosUser),
 	verificarCompartir(PermisosUser), !.
 
+verificarEditar([H|_]):-
+	H = "W".
+verificarEditar([_|T]):-
+	verificarEditar(T).
+
+puedeEditar(ListPermiso,UserActivo) :-
+	buscarPermiso(ListPermiso, UserActivo, PermisosUser),
+	verificarEditar(PermisosUser), !.
 
 permisoValido(Permiso):-
 	(Permiso = "R"), !;
@@ -452,7 +469,35 @@ paradigmaDocsShare(Sn1, DocumentId, ListaPermisos, ListaUsernamesPermitidos, Sn2
 	append(NewDocuments, [NewDocumento], DocumentsFinal),
 	paradigmadocsActualizado(NamePdocs, DatePdocs, Users, [], DocumentsFinal, Sn2).
 
+paradigmaDocsAdd(Sn1, DocumentId, Date, ContenidoTexto, Sn2):-
+	integer(DocumentId),
+	string(ContenidoTexto),
+	getActivosPdocs(Sn1,Activo),
+	length(Activo,1),
+	getUserActivo(Activo,UserActivo),
+	getNombrePdocs(Sn1,NamePdocs),
+	getDatePdocs(Sn1,DatePdocs),
+	getRegistradosPdocs(Sn1,Users),
+	getDocumentosPdocs(Sn1,Documents),
+	encontrarPorIDDocumento(Documents,DocumentId,DocEditar),
+	getAutorDocumento(DocEditar,Autor),
+	getDateDocumento(DocEditar,DateDoc),
+	getNameDocumento(DocEditar,Name),
+	getContenidoDocumento(DocEditar,Contenido),
+	getPermisosDocumento(DocEditar, Permisos),
+	getHistorialDocumento(DocEditar, HistorialDoc),
+	puedeEditar(Permisos, UserActivo),
+	string_concat(Contenido, ContenidoTexto, NewContenido),
+	length(HistorialDoc, IDVersion),
+	historial(Date, NewContenido, IDVersion, NewVersion),
+	append(HistorialDoc, [NewVersion], NewHistorial),
+	(NewDocumento = [Autor, DateDoc, Name, NewContenido, Permisos, NewHistorial, DocumentId]),
+	borrarDocDuplicado(DocEditar, Documents, NewDocuments),
+	append(NewDocuments, [NewDocumento], DocumentsFinal),
+	paradigmadocsActualizado(NamePdocs, DatePdocs, Users, [], DocumentsFinal, Sn2).
 
+
+	
 
 
 
