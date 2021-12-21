@@ -460,6 +460,16 @@ borrarDocDuplicado( Documento, [Cabeza|Resto], [Cabeza|Resultado] ) :-
 	Documento\=Cabeza,
 	borrarDocDuplicado( Documento, Resto, Resultado ).
 
+% Dominio: Un Historial de un documento, un ID (integer) y una version de un documento
+% Descripcion: Predicado que encuentra una version del historial de versiones de un documento, a traves
+% de su ID.
+encontrarPorIDHistorial([H|_],IDVersion,Retorno):-
+    getIDHistorial(H,ID2),
+    (ID2 = IDVersion),
+    H = Retorno.
+encontrarPorIDHistorial([_|T],ID,Retorno):-
+    encontrarPorIDHistorial(T,ID,Retorno).
+
 /*____________________________________________________________________________________________________________
  _____  ____      _     ____                          _  _                            ____                       
 |_   _||  _ \    / \   |  _ \   __ _  _ __   __ _   __| |(_)  __ _  _ __ ___    __ _  |  _ \   ___    ___  ___ 
@@ -570,8 +580,10 @@ paradigmaDocsRegister(Sn1, Fecha, Username, Password, Sn2):-
 
 % --------------------------------------PREDICADO PARADIGMADOCSLOGIN--------------------------------------
 
-% Dominio:
-% Descripcion:
+% Dominio: Un paradigmaDocs, un username (string), un password (string) y un paradigmaDocs actualizado
+% Descripcion: Predicado que loguea a un user registrado dentro de paradigmaDocs. El predicado verifica
+% que las credenciales del user sean las correctas. Si las credenciales son incorrectas o se intenta loguear
+% a un user que no esta registrado en paradigmaDocs, se retorna false.
 paradigmaDocsLogin(Sn1,Username,Password,Sn2):-
     string(Username),
     string(Password),
@@ -584,8 +596,13 @@ paradigmaDocsLogin(Sn1,Username,Password,Sn2):-
     append(Activo,[Username],NewActivo),
     paradigmadocsActualizado(NamePdocs,DatePdocs,Users,NewActivo,Documents, Sn2).
 
-% Dominio:
-% Descripcion:
+% --------------------------------------PREDICADO PARADIGMADOCSCREATE-------------------------------------
+
+% Dominio: Un paradigmaDocs, una fecha (date), un nombre (string), un contenido / texto (string) y un 
+% paradigmaDocs actualizado.
+% Descripcion: Predicado que crea un nuevo documento y lo guarda en la plataforma. El predicado se encarga
+% de asignar el ID correcto al documento y de dejar al user actualmente activo como autor de este. Si no
+% hay user activo, o  se intenta crear un documento erroneamente, se retorna false.
 paradigmaDocsCreate(Sn1, Fecha, Nombre, Contenido, Sn2):-
 	string(Nombre),
 	string(Contenido),
@@ -601,8 +618,15 @@ paradigmaDocsCreate(Sn1, Fecha, Nombre, Contenido, Sn2):-
 	append(Documents, [Doc], NewDocuments),
 	paradigmadocsActualizado(NamePdocs, DatePdocs, Users, [], NewDocuments, Sn2).
 
-% Dominio:
-% Descripcion:
+% --------------------------------------PREDICADO PARADIGMADOCSSHARE-------------------------------------
+
+% Dominio: Un ID de documento (integer), una lista de permisos (list), una lista de usernames
+% Descripcion: Predicado que comparte un Documento a otros usuarios. El autor por defecto tiene
+% los 4 permisos disponibles. Si el user activo tiene permisos de compartir (ya sea porque es el
+% autor o se le concedio) entonces puede dar permisos a otros usuarios para el documento que 
+% tenga el ID ingresado. Si el documento no existe, se intenta dar permisos inexistentes o a 
+% usuarios que no estan registrados en la plataforma o directamente no hay un user activo, se 
+% retorna false.
 paradigmaDocsShare(Sn1, DocumentId, ListaPermisos, ListaUsernamesPermitidos, Sn2):-
 	integer(DocumentId),
 	is_list(ListaPermisos),
@@ -630,10 +654,17 @@ paradigmaDocsShare(Sn1, DocumentId, ListaPermisos, ListaUsernamesPermitidos, Sn2
 	(NewDocumento = [Autor,Date,Name,Contenido,AccessesFinal,HistorialDoc,DocumentId]),
 	borrarDocDuplicado(DocCompartir, Documents, NewDocuments),
 	append(NewDocuments, [NewDocumento], DocumentsFinal),
-	paradigmadocsActualizado(NamePdocs, DatePdocs, Users, [], DocumentsFinal, Sn2).
+	paradigmadocsActualizado(NamePdocs, DatePdocs, Users, [], DocumentsFinal, Sn2), !.
 
-% Dominio:
-% Descripcion:
+% --------------------------------------PREDICADO PARADIGMADOCSADD-------------------------------------
+
+% Dominio: Un paradigmaDocs, un ID de documento (integer), una fecha (date), un contenido / texto
+% (string) y un paradigmaDocs actualizado
+% Descripcion: Predicado que agrega texto a la parte final de la version activa de un documento. Si el 
+% user activo tiene permisos de escritura (ya sea porque es el autor del documento o se le concedio),
+% entonces el predicado funcionara sin problemas y la nueva version pasara a ser activa, quedando
+% tambien registrada en el historial. Si no hay user activo, no existe el documento, se intenta usar
+% este predicado sin tener permisos de escritura, o el formato del texto es incorrecto, se retorna false
 paradigmaDocsAdd(Sn1, DocumentId, Date, ContenidoTexto, Sn2):-
 	integer(DocumentId),
 	string(ContenidoTexto),
@@ -659,17 +690,59 @@ paradigmaDocsAdd(Sn1, DocumentId, Date, ContenidoTexto, Sn2):-
 	(NewDocumento = [Autor, DateDoc, Name, NewContenido, Permisos, NewHistorial, DocumentId]),
 	borrarDocDuplicado(DocEditar, Documents, NewDocuments),
 	append(NewDocuments, [NewDocumento], DocumentsFinal),
-	paradigmadocsActualizado(NamePdocs, DatePdocs, Users, [], DocumentsFinal, Sn2).
+	paradigmadocsActualizado(NamePdocs, DatePdocs, Users, [], DocumentsFinal, Sn2), !.
+
+% --------------------------------PREDICADO PARADIGMADOCSRESTOREVERSION---------------------------------
+
+% Dominio: Un paradigmaDocs, un ID de documento (integer), un ID de version (integer) y un paradigmaDocs
+% actualizado.
+% Descripcion: Predicado que restaura una version en especifico de un documento en especifico. Si el user
+% activo no es el autor del documento, o se intenta restaurar un documento o version que no existe o 
+% directamente no hay user activo, se retorna false.
+paradigmaDocsRestoreVersion(Sn1, DocumentId, IdVersion, Sn2):-
+	integer(DocumentId),
+	integer(IdVersion),
+	getActivosPdocs(Sn1,Activo),
+	length(Activo,1),
+	getUserActivo(Activo,UserActivo),
+	getNombrePdocs(Sn1,NamePdocs),
+	getDatePdocs(Sn1,DatePdocs),
+	getRegistradosPdocs(Sn1,Users),
+	getDocumentosPdocs(Sn1,Documents),
+	encontrarPorIDDocumento(Documents,DocumentId,DocEditar),
+	getAutorDocumento(DocEditar,Autor),
+	(Autor == UserActivo),
+	getDateDocumento(DocEditar,DateDoc),
+	getNameDocumento(DocEditar,Name),
+	getPermisosDocumento(DocEditar, Permisos),
+	getHistorialDocumento(DocEditar, HistorialDoc),
+	encontrarPorIDHistorial(HistorialDoc, IdVersion, DocVersion),
+	getTextoHistorial(DocVersion, NewContent),
+	(NewDocumento = [Autor, DateDoc, Name, NewContent, Permisos, HistorialDoc, DocumentId]),
+	borrarDocDuplicado(DocEditar, Documents, NewDocuments),
+	append(NewDocuments, [NewDocumento], DocumentsFinal),
+	paradigmadocsActualizado(NamePdocs, DatePdocs, Users, [], DocumentsFinal, Sn2), !.
+
+% --------------------------------PREDICADO PARADIGMADOCSTOSTRING--------------------------------------
+
+% Dominio:
+% Descripcion:
+% paradigmaDocsToString(Sn1, StrOut):-
+
+/*______________________________________________________________________________________________________
+  _____       _   _____   __  __   ____    _        ___    ____  
+ | ____|     | | | ____| |  \/  | |  _ \  | |      / _ \  / ___| 
+ |  _|    _  | | |  _|   | |\/| | | |_) | | |     | | | | \___ \ 
+ | |___  | |_| | | |___  | |  | | |  __/  | |___  | |_| |  ___) |
+ |_____|  \___/  |_____| |_|  |_| |_|     |_____|  \___/  |____/ 
+_________________________________________________________________________________________________________*/
 
 
-	
-
-
-
-	
-
-% date(20, 12, 2015, D1), paradigmaDocs("google docs", D1, PD1), paradigmaDocsRegister(PD1, D1, "vflores", "hola123", PD2).
-
-% ["google docs", [20, 12, 2015], [[[20, 12, 2015], "vflores", "hola123"]], [], []]
-
-% date(20, 12, 2015, D1), paradigmaDocs("google docs", D1, PD1), paradigmaDocsRegister(PD1, D1, "vflores", "hola123", ["google docs", [20, 12, 2015], [[[20, 12, 2015], "vflores", "hola123"]], [], []]).
+% date(20, 12, 2021, D1), date(21,12,2021, D2), date(3,1,2022,D3).
+% date(20, 12, 2021, D1), date(21,12,2021, D2), date(3,1,2022,D3), paradigmaDocs("gDocs", D1, PD1).
+% date(20, 12, 2021, D1), date(21,12,2021, D2), date(3,1,2022,D3), paradigmaDocs("gDocs", D1, PD1), paradigmaDocsRegister(PD1,D1,"user1", "pass1", PD2).
+% date(20, 12, 2021, D1), date(21,12,2021, D2), date(3,1,2022,D3), paradigmaDocs("gDocs", D1, PD1), paradigmaDocsRegister(PD1,D1,"user1", "pass1", PD2), paradigmaDocsRegister(PD2,D2,"user2", "pass2", PD3).
+% date(20, 12, 2021, D1), date(21,12,2021, D2), date(3,1,2022,D3), paradigmaDocs("gDocs", D1, PD1), paradigmaDocsRegister(PD1,D1,"user1", "pass1", PD2), paradigmaDocsRegister(PD2,D2,"user2", "pass2", PD3), paradigmaDocsRegister(PD3,D3,"user3", "pass3", PD4).
+% date(20, 12, 2021, D1), date(21,12,2021, D2), date(3,1,2022,D3), paradigmaDocs("gDocs", D1, PD1), paradigmaDocsRegister(PD1,D1,"user1", "pass1", PD2), paradigmaDocsRegister(PD2,D2,"user2", "pass2", PD3), paradigmaDocsRegister(PD3,D3,"user3", "pass3", PD4), paradigmaDocsLogin(PD4, "user1", "pass1", PD5), paradigmaDocsCreate(PD5, D1, "lab1","scheme", PD6).
+% date(20, 12, 2021, D1), date(21,12,2021, D2), date(3,1,2022,D3), paradigmaDocs("gDocs", D1, PD1), paradigmaDocsRegister(PD1,D1,"user1", "pass1", PD2), paradigmaDocsRegister(PD2,D2,"user2", "pass2", PD3), paradigmaDocsRegister(PD3,D3,"user3", "pass3", PD4), paradigmaDocsLogin(PD4, "user1", "pass1", PD5), paradigmaDocsCreate(PD5, D1, "lab1","scheme", PD6), paradigmaDocsLogin(PD6, "user1", "pass1", PD7), paradigmaDocsAdd(PD7, 0, D2, "newtext", PD8).
+% date(20, 12, 2021, D1), date(21,12,2021, D2), date(3,1,2022,D3), paradigmaDocs("gDocs", D1, PD1), paradigmaDocsRegister(PD1,D1,"user1", "pass1", PD2), paradigmaDocsRegister(PD2,D2,"user2", "pass2", PD3), paradigmaDocsRegister(PD3,D3,"user3", "pass3", PD4), paradigmaDocsLogin(PD4, "user1", "pass1", PD5), paradigmaDocsCreate(PD5, D1, "lab1","scheme", PD6), paradigmaDocsLogin(PD6, "user1", "pass1", PD7), paradigmaDocsAdd(PD7, 0, D2, "newtext", PD8), paradigmaDocsLogin(PD8, "user1", "pass1", PD9), paradigmaDocsRestoreVersion(PD9, 0, 0, PD10).
