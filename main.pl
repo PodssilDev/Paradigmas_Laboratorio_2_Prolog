@@ -1,6 +1,20 @@
-% -------------------------LABORATORIO 2: PROLOG-----------------------------
+/*__________________________________________________________________________________________
+  _          _      ____      ____          ____    ____     ___    _        ___     ____ 
+ | |        / \    | __ )    |___ \   _    |  _ \  |  _ \   / _ \  | |      / _ \   / ___|
+ | |       / _ \   |  _ \      __) | (_)   | |_) | | |_) | | | | | | |     | | | | | |  _ 
+ | |___   / ___ \  | |_) |    / __/   _    |  __/  |  _ <  | |_| | | |___  | |_| | | |_| |
+ |_____| /_/   \_\ |____/    |_____| (_)   |_|     |_| \_\  \___/  |_____|  \___/   \____|
+_____________________________________________________________________________________________*/
 
-% ----------------------------- TDA DATE-------------------------------------
+
+/*____________________________________________________________________________________________
+  _____   ____       _        _____                 _             
+ |_   _| |  _ \     / \      |  ___|   ___    ___  | |__     __ _ 
+   | |   | | | |   / _ \     | |_     / _ \  / __| | '_ \   / _` |
+   | |   | |_| |  / ___ \    |  _|   |  __/ | (__  | | | | | (_| |
+   |_|   |____/  /_/   \_\   |_|      \___|  \___| |_| |_|  \__,_|     
+_______________________________________________________________________________________________*/
+
 % Dominio:
 % cantidad_dias: Entero
 % DD: Entero
@@ -14,11 +28,12 @@
 % getMesFecha([DD,MM,AAAA], MM)
 % getAnioFecha([DD,MM,AAAA], AAAA)
 
-% ---------------------------REPRESENTACION-----------------------------------
-% El TDA Fecha se representa a traves de una lista (integer X integer X
-% integer), la cual contiene un dia, un mes y un anio.
+% ---------------------------REPRESENTACION-------------------------------------------------------
 
-% --------------------------CONSTRUCTOR Y PERTENENCIA-------------------------
+% El TDA Fecha se representa a traves de una lista (integer X integer X integer), la cual contiene
+% un dia, un mes y un anio.
+
+% --------------------------CONSTRUCTOR Y PERTENENCIA---------------------------------------------
 
 % Clausulas
 % Hechos: 
@@ -46,7 +61,7 @@ date(DD,MM,AAAA,[DD,MM,AAAA]) :-
 	DD>0,
 	DD=<Dias.
 
-% ---------------------------------SELECTORES---------------------------------
+% ---------------------------------SELECTORES---------------------------------------------------
 
 % Dominio: Una fecha (lista de tres integers) y un entero
 % Descripcion: Predicado que obtiene los dias correspondientes a una fecha valida
@@ -63,7 +78,13 @@ getMesFecha([DD,MM,AAAA],MM) :-
 getAnioFecha([DD,MM,AAAA],AAAA) :-
 	date(DD,MM,AAAA,[DD,MM,AAAA]).
 
-% ----------------------------- TDA USER-------------------------------------
+/*_______________________________________________________________________________________________
+  _____   ____       _        _   _                     
+ |_   _| |  _ \     / \      | | | |  ___    ___   _ __ 
+   | |   | | | |   / _ \     | | | | / __|  / _ \ | '__|
+   | |   | |_| |  / ___ \    | |_| | \__ \ |  __/ | |   
+   |_|   |____/  /_/   \_\    \___/  |___/  \___| |_|   
+__________________________________________________________________________________________________*/
 
 % Dominio:
 % Date: Date
@@ -79,12 +100,13 @@ getAnioFecha([DD,MM,AAAA],AAAA) :-
 % pertenece(Nombre,[[_,_,_]|Resto])
 % buscarUsuarioPassword([H|_],Usuario,Password):
 % buscarUsuarioPassword([_|T],Usuario,Password)
-% ---------------------------REPRESENTACION-----------------------------------
 
-% El TDA User se representa a traves de una lista (date X string X string X list)
-% la cual contiene una fecha, un username y un password
+% -------------------------------------REPRESENTACION----------------------------------------------
 
-% ---------------------------CONSTRUCTOR Y PERTENENCIA---------------------
+% El TDA User se representa a traves de una lista (date X string X string X list) cual contiene una
+% fecha, un username y un password
+
+% -------------------------------CONSTRUCTOR Y PERTENENCIA-----------------------------------------
 
 % Clausulas
 % Reglas
@@ -101,7 +123,7 @@ user(Date, Nombre, Password, [Date, Nombre, Password]) :-
 	getAnioFecha(Date,AAAA),
 	date(DD,MM,AAAA,Date),!.
 
-% ----------------------------SELECTORES---------------------------------
+% --------------------------------------SELECTORES--------------------------------------------------
 
 % Dominio: Un User valido y una date
 % Descripcion: Predicado que obtiene la fecha de un User
@@ -117,28 +139,43 @@ getUserName([Date,Nombre,Password], Nombre):-
 % Descripcion: Predicado que obtiene el password de un User
 getUserPass([Date,Nombre,Password], Password):-
 	user(Date,Nombre,Password,[Date,Nombre,Password]).
-% ------------------------------OTROS PREDICADOS--------------------------
+
+% ---------------------------------------OTROS PREDICADOS------------------------------------------
 
 % Dominio: Un Nombre (string) y un User
 % Descripcion: Caso base de pertenece. Si el nombre es igual al nombre del User
 % entonces el predicado da true.
 pertenece(Nombre,[[_,Nombre,_]|_]):- !.
+pertenece(Nombre,[[_,_,_]|OtherUsers]):-
+            pertenece(Nombre,OtherUsers).
 
-% Dominio: Un Nombre (string) y un User
-% Descripcion: Caso recursivo de pertenece. Busca al user tal que el nombre del User
-% sea igual al nombre ingresado como entrada.
-pertenece(Nombre,[[_,_,_]|Resto]):-
-            pertenece(Nombre,Resto).
-
-buscarUsuarioPassword([H|_],Usuario,Password):-
-    getUserName(H,Username),
-    getUserPass(H,Contrasena),
+% Dominio: Un user, un username (string) y un password (string)
+% Descripcion: Verifica si existe un User en la lista de Users tal que el username y
+%  password coincidan con los ingresados por entrada
+buscarUsuarioPassword([UserActual|_],Usuario,Password):-
+    getUserName(UserActual,Username),
+    getUserPass(UserActual,Contrasena),
     (Usuario = Username),
     (Password = Contrasena).
-buscarUsuarioPassword([_|T],Usuario,Password):-
-    buscarUsuarioPassword(T,Usuario,Password).
+buscarUsuarioPassword([_|OtherUsers],Usuario,Password):-
+    buscarUsuarioPassword(OtherUsers,Usuario,Password).
 
-% -------------------------TDA HISTORIAL----------------------------------
+% Dominio: Una lista de Usuarios registrados y una lista de usernames
+% Descripcion: Predicado que verifica si todos los usernames de una lista pertenecen a los usernames
+% de usuarios en otra lista (En este caso, en la lista de registrados de paradigmaDocs)
+verificarListaUsuarios(_, []):- !.
+verificarListaUsuarios(UsersRegistrados, [Cabeza|Resto]):-
+	pertenece(Cabeza, UsersRegistrados),
+	verificarListaUsuarios(UsersRegistrados,Resto).
+
+/*__________________________________________________________________________________________________
+  _____   ____       _        _   _   _         _                    _           _ 
+ |_   _| |  _ \     / \      | | | | (_)  ___  | |_    ___    _ __  (_)   __ _  | |
+   | |   | | | |   / _ \     | |_| | | | / __| | __|  / _ \  | '__| | |  / _` | | |
+   | |   | |_| |  / ___ \    |  _  | | | \__ \ | |_  | (_) | | |    | | | (_| | | |
+   |_|   |____/  /_/   \_\   |_| |_| |_| |___/  \__|  \___/  |_|    |_|  \__,_| |_|
+____________________________________________________________________________________________________*/
+                                                                                 
 % Dominio: 
 % Date: Date (Lista de 3 integers)
 % Contenido: String
@@ -146,13 +183,16 @@ buscarUsuarioPassword([_|T],Usuario,Password):-
 
 % Predicados:
 % historial(Date, Contenido, IDVer, [Date, Contenido, IDVer])
+% getDateHistorial([Date,_,_], Date)
+% getTextoHistorial([_,Texto,_], Texto)
+% getIDHistorial([_,_,ID], ID)
 
-% ---------------------------REPRESENTACION-----------------------------------
+% ---------------------------------------REPRESENTACION-----------------------------------------------
 
-% El TDA Historial se representa a traves de una lista (date X string X integer)
-% que contiene una fecha, un contenido y un ID 
+% El TDA Historial se representa a traves de una lista (date X string X integer) que contiene una 
+% fecha, un contenido y un ID 
 
-% ---------------------------CONSTRUCTOR Y PERTENENCIA---------------------
+% ------------------------------------CONSTRUCTOR Y PERTENENCIA----------------------------------------
 
 % Clausulas
 % Reglas
@@ -169,12 +209,35 @@ historial(Date,Contenido,IDVer, [Date, Contenido, IDVer]):-
 	getAnioFecha(Date,AAAA),
 	date(DD,MM,AAAA,Date),!.
 
-% ----------------------------SELECTORES---------------------------------
+% ---------------------------------------------SELECTORES----------------------------------------------
 
+% Dominio: Una version de historial y una fecha
+% Descripcion: Predicado que obtiene una fecha valida de una version de historial
+getDateHistorial([Date,_,_], Date):-
+	is_list(Date),
+	length(Date,3),
+	getDiaFecha(Date,DD),
+	getMesFecha(Date,MM),
+	getAnioFecha(Date,AAAA),
+	date(DD,MM,AAAA,Date),!.
 
+% Dominio: Una version de historial y un texto (string)
+% Descripcion: Predicado que obtiene el texto de una version de historial
+getTextoHistorial([_,Texto,_], Texto):-
+	string(Texto).
 
-% -------------------------TDA DOCUMENTO-------------------------------------
+% Dominio: Una version de historial y un ID (integer)
+% Descripcion: Predicado que obtiene el ID de una version de historial.
+getIDHistorial([_,_,ID], ID):-
+	integer(ID).
 
+/*______________________________________________________________________________________________________
+  _____   ____       _        ____                                                      _           
+ |_   _| |  _ \     / \      |  _ \    ___     ___   _   _   _ __ ___     ___   _ __   | |_    ___  
+   | |   | | | |   / _ \     | | | |  / _ \   / __| | | | | | '_ ` _ \   / _ \ | '_ \  | __|  / _ \ 
+   | |   | |_| |  / ___ \    | |_| | | (_) | | (__  | |_| | | | | | | | |  __/ | | | | | |_  | (_) |
+   |_|   |____/  /_/   \_\   |____/   \___/   \___|  \__,_| |_| |_| |_|  \___| |_| |_|  \__|  \___/ 
+_________________________________________________________________________________________________________*/                                                                                                   
 % Dominio:
 % Autor: String
 % Date: Date
@@ -193,16 +256,21 @@ historial(Date,Contenido,IDVer, [Date, Contenido, IDVer]):-
 % getPermisosDocumento([_,_,_,_,Permisos,_,_],Permisos)
 % getHistorialDocumento([_,_,_,_,_,HistorialList,_],HistorialList)
 % getIDDocumento([_,_,_,_,_,_,IDDoc],IDDoc)
+% encontrarPorIDDocumento([H|_],ID,Retorno)
+% encontrarPorIDDocumento([_|T],ID,Retorno)
+% primerElemento([Cabeza|_], Cabeza)
+% restoElementos([_,Resto],Resto)
 
-% ---------------------------REPRESENTACION-----------------------------------
+% -------------------------------------REPRESENTACION--------------------------------------------------
 
-% El TDA Documento se representa a traves de una lista (string X date X string
-% X string X list X list X integer) que contiene un Autor, una fecha, un nombre,
-% un contenido (texto), dos listas, donde la primera es la lista de permisos y la
-% segunda es la lista de historial y un ID unico.
+% El TDA Documento se representa a traves de una lista (string X date X string X string X list X list X 
+% integer) que contiene un Autor, una fecha, un nombre, un contenido (texto), dos listas, donde la 
+% primera es la lista de permisos y la segunda es la lista de historial y un ID unico.
 
-% ---------------------------CONSTRUCTOR Y PERTENENCIA---------------------
-%
+% ---------------------------------CONSTRUCTOR Y PERTENENCIA-------------------------------------------
+
+% Dominio: Tres strings, una fecha, un integer y un TDA Documento
+% Descripcion: Predicado que crea un Documento.
 documento(Autor,Date,Nombre,Contenido, IDDoc, DocFinal):-
 	string(Autor),
 	string(Nombre),
@@ -217,11 +285,15 @@ documento(Autor,Date,Nombre,Contenido, IDDoc, DocFinal):-
 	historial(Date,Contenido,0, Hist1),
 	DocFinal = [Autor,Date,Nombre,Contenido,[[Autor, "R", "W", "C", "S"]],[Hist1],IDDoc].
 
-% ----------------------------SELECTORES---------------------------------
+% ---------------------------------------SELECTORES----------------------------------------------------
 
+% Dominio: Un Documento y un string
+% Descripcion: Predicado que obtiene al Autor de un Documento
 getAutorDocumento([Autor,_,_,_,_,_,_],Autor):-
 	string(Autor).
 
+% Dominio: Un Documento y una date
+% Descripcion: Predicado que obtiene la fecha de creacion de un Documento
 getDateDocumento([_,Date,_,_,_,_,_], Date):-
 	is_list(Date),
 	length(Date,3),
@@ -230,175 +302,259 @@ getDateDocumento([_,Date,_,_,_,_,_], Date):-
 	getAnioFecha(Date,AAAA),
 	date(DD,MM,AAAA,Date),!.
 
+% Dominio: Un Documento y un string
+% Descripcion: Predicado que obtiene el nombre de un Documento
 getNameDocumento([_,_,Nombre,_,_,_,_],Nombre):-
 	string(Nombre).
 
+% Dominio: Un Documento y un string
+% Descripcion: Predicado que obtiene el contenido (texto) de un Documento
 getContenidoDocumento([_,_,_,Contenido,_,_,_],Contenido):-
 	string(Contenido).
 
+% Dominio: Un Documento y una lista de permisos (lista de sublistas de strings)
+% Descripcion: Predicado que la lista de Permisos de un Documento
 getPermisosDocumento([_,_,_,_,Permisos,_,_],Permisos):-
 	is_list(Permisos).
 
+% Dominio: Un Documento y un Historial
+% Descripcion: Predicado que el Historial de un Documento
 getHistorialDocumento([_,_,_,_,_,HistorialList,_],HistorialList):-
 	is_list(HistorialList).
 
+% Dominio: Un Documento y un integer
+% Descripcion: Predicado que el ID unico de un Documento
 getIDDocumento([_,_,_,_,_,_,IDDoc],IDDoc):-
 	integer(IDDoc).
 
+% -------------------------------------OTROS PREDICADOS-----------------------------------------------
+
+% Dominio: Una lista de Documentos, un ID (integer) y un TDA Documento
+% Descripcion: Predicado que encuentra a un Documento en una lista de Documentos a traves de su ID
 encontrarPorIDDocumento([H|_],ID,Retorno):-
     getIDDocumento(H,ID2),
     (ID2 = ID),
     H = Retorno.
-
 encontrarPorIDDocumento([_|T],ID,Retorno):-
     encontrarPorIDDocumento(T,ID,Retorno).
 
-buscarPermiso([H|_],User,ListPermisos):-
-    car(H,Username),
-    (User = Username),
-	ListPermisos = H.
-buscarPermiso([_|T],User,ListPermisos):-
-    buscarPermiso(T,User,ListPermisos).
+% Dominio: Una lista y un elemento (puede ser de cualquier tipo)
+% Descripcion: Predicado que obtiene el primer elemento de una lista
+primerElemento([Cabeza|_], Cabeza).
 
-car([H|_], H).
-cdr([_,T],T).
+% Dominio: Una lista y otra lista (la misma pero sin el primer elemento)
+% Descripcion: Predicado que obtiene a la lista ingresada por entrada sin el primer elemento de esta
+restoElementos([_,Resto],Resto).
 
-verificarCompartir([H|_]):-
-	H = "S".
-verificarCompartir([_|T]):-
-	verificarCompartir(T).
-
-
-puedeCompartir(ListPermiso,UserActivo) :-
-	buscarPermiso(ListPermiso, UserActivo, PermisosUser),
-	verificarCompartir(PermisosUser), !.
-
-verificarEditar([H|_]):-
-	H = "W".
-verificarEditar([_|T]):-
-	verificarEditar(T).
-
-puedeEditar(ListPermiso,UserActivo) :-
-	buscarPermiso(ListPermiso, UserActivo, PermisosUser),
-	verificarEditar(PermisosUser), !.
-
+% Dominio: Un string
+% Descripcion: Predicado que retorna True si un permiso es valido (Si es "R", "W", "S" o "C")
 permisoValido(Permiso):-
 	(Permiso = "R"), !;
 	(Permiso = "W"), !;
 	(Permiso = "S"), !;
 	(Permiso = "C").
 
-verificarPermisosValidos([]).
+% Dominio: Una lista de sublistas de Permisos de un Documento, un User y una lista de permisos
+% Descripcion: Predicado que obtiene (si es que existe) la lista de permisos de un User en especifico
+% en un Documento
+buscarPermiso([PermisosActual|_],User,ListPermisos):-
+    primerElemento(PermisosActual,Username),
+    (User = Username),
+	ListPermisos = PermisosActual.
+buscarPermiso([_|RestoPermisos],User,ListPermisos):-
+    buscarPermiso(RestoPermisos,User,ListPermisos).
 
+% Dominio: Una lista que contiene un username y permisos (strings)
+% Descripcion: Predicado que verifica si en la lista de permisos se encuentra el permiso de compartir ("S")
+verificarCompartir([Cabeza|_]):-
+	Cabeza = "S".
+verificarCompartir([_|Resto]):-
+	verificarCompartir(Resto).
+
+% Dominio: Una lista de sublistas de permisos y un User
+% Descripcion: Predicado que recorre toda la lista de sublistas de permisos para verificar si un User tiene
+% el permiso de compartir ("S")
+puedeCompartir(ListPermiso,UserActivo) :-
+	buscarPermiso(ListPermiso, UserActivo, PermisosUser),
+	verificarCompartir(PermisosUser), !.
+
+% Dominio: Una lista que contiene un username y permisos (strings)
+% Descripcion: Predicado que verifica si en la lista de permisos se encuentra el permiso de escritura ("W")
+verificarEditar([Cabeza|_]):-
+	Cabeza = "W".
+verificarEditar([_|Resto]):-
+	verificarEditar(Resto).
+
+% Dominio: Una lista de sublistas de permisos y un User
+% Descripcion: Predicado que recorre toda la lista de sublistas de permisos para verificar si un User tiene
+% el permiso de compartir ("W")
+puedeEditar(ListPermiso,UserActivo) :-
+	buscarPermiso(ListPermiso, UserActivo, PermisosUser),
+	verificarEditar(PermisosUser), !.
+
+% Dominio: Una lista de solo permisos (strings)
+% Descripcion: Predicado que verifica si una lista de solo permisos tiene solo permisos validos
+verificarPermisosValidos([]).
 verificarPermisosValidos([H|T]):-
 	permisoValido(H),
 	verificarPermisosValidos(T).
 
-verificarListaUsuarios(_, []):- !.
-verificarListaUsuarios(UsersRegistrados, [H|T]):-
-	pertenece(H, UsersRegistrados),
-	verificarListaUsuarios(UsersRegistrados,T).
-
-
-
+% Dominio: Una lista de permisos, una lista de usernames, una lista de permisos de un documento y una lista
+% total de permisos, sin filtrar (pueden haber reptidos)
+% Descripcion: Predicado que asigna todos los permisos validos a los usuarios correspondientes y coloca estas
+% listas en la lista de permisos final del documento, aunque no se filtra, por lo que pueden haber duplicados
+% (El proceso de filtrado se hace en otro predicado)
 obtenerListaAccesos(_,[],PermisosFinal,ListaResultante):-
     ( PermisosFinal = ListaResultante).
-
-obtenerListaAccesos(ListaPermisos,[H|T], ListaPermisosPre, ListaResultante):-
-	append([H],ListaPermisos,ListaAcceses),
+obtenerListaAccesos(ListaPermisos,[PrimerUserN|RestoUserN], ListaPermisosPre, ListaResultante):-
+	append([PrimerUserN],ListaPermisos,ListaAcceses),
 	append(ListaPermisosPre,[ListaAcceses],NewPermisosPre),
-	obtenerListaAccesos(ListaPermisos, T, NewPermisosPre, ListaResultante).
+	obtenerListaAccesos(ListaPermisos, RestoUserN, NewPermisosPre, ListaResultante).
 
-
+% Dominio: Una lista de permisos, Un User y dos listas de users
+% Descripcion: Verifica si un User de la lista de usernames permitidos ya tiene permisos en un Documento
 tienePoder([],_,ListaTemp,ListaResultante):-
 	(ListaTemp = ListaResultante).
-
 tienePoder([H|_], User, ListaTemp, ListaResultante):-
-	car(H, Nombre),
+	primerElemento(H, Nombre),
 	(User == Nombre),
 	append([User], ListaTemp, ListaResultante).
-
 tienePoder([_|T], User, ListaTemp, ListaResultante):-
 	tienePoder(T, User, ListaTemp, ListaResultante).
 
-
+% Dominio: Una lista de permisos y tres listas de users
+% Descripcion: Predicado que verifica cuales son los users que ya tienen permisos en un documento y si
+% estos corresponden a algunos de los users de la lista de usernames permitidos
 tienenPermisos(_,[],ListGuardado,ListResultado):-
 	(ListGuardado = ListResultado).
-
 tienenPermisos(ListaPermisos, [H|T], ListGuardado, ListResultado):-
 	tienePoder(ListaPermisos, H, ListGuardado, ListTemp),
 	tienenPermisos(ListaPermisos,T,ListTemp,ListResultado).
 
+% Dominio: Un username, una lista de permisos sin filtrar y una lista de permisos filtradas
+% Descripcion: Predicado que elimina una lista de permisos duplicadas de un usuario. El predicado siempre
+% elimina los permisos antiguos y deja los nuevos, o elimina los duplicados en caso de que los permisos sean
+% iguales a los que ya tenia.
+borrarPrimeraOcurrenciaPermiso( Elemento, [H|Resto], Resto ):-
+    primerElemento(H,Nombre),
+    (Elemento == Nombre).
+borrarPrimeraOcurrenciaPermiso( Elemento, [Cabeza|Resto], [Cabeza|Resultado] ) :-
+	Elemento\=Cabeza,
+	borrarPrimeraOcurrenciaPermiso( Elemento, Resto, Resultado ).
 
+% Dominio: Una lista de permisos sin filtrar, una lista de usernames y una lista de permisos filtradas
+% Descripcion: Predicado que filtra la lista de permisos de un documento, eliminando aquellos permisos
+% repetidos y evitando que un mismo user tenga mas de una lista de permisos
 borrarRepetidos(Accesses, [], AcccessesFinal):-
 	(Accesses = AcccessesFinal).
-
 borrarRepetidos(Accesses, [H|T], AccessesFinal):-
-	borrarPrimeraOcurrencia(H, Accesses, AccessesTemp),
+	borrarPrimeraOcurrenciaPermiso(H, Accesses, AccessesTemp),
 	borrarRepetidos(AccessesTemp, T, AccessesFinal).
 
+% Dominio: Un documento, una lista de documentos y una lista de documentos filtrada
+% Descripcion: Predicado que elimina a un documento que va a ser reemplazado por una version actualizada
+% de este, evitando asi que hayan dos documentos con el mismo ID.
 borrarDocDuplicado( Documento, [H|Resto], Resto ):-
     (Documento == H).
-
 borrarDocDuplicado( Documento, [Cabeza|Resto], [Cabeza|Resultado] ) :-
-   % car(Cabeza,Nombre),
-	Documento\=Cabeza, % Elemento no es la cabeza de la lista
+	Documento\=Cabeza,
 	borrarDocDuplicado( Documento, Resto, Resultado ).
 
+/*____________________________________________________________________________________________________________
+ _____  ____      _     ____                          _  _                            ____                       
+|_   _||  _ \    / \   |  _ \   __ _  _ __   __ _   __| |(_)  __ _  _ __ ___    __ _  |  _ \   ___    ___  ___ 
+  | |  | | | |  / _ \  | |_) | / _` || '__| / _` | / _` || | / _` || '_ ` _ \  / _` | | | | | / _ \  / __|/ __|
+  | |  | |_| | / ___ \ |  __/ | (_| || |   | (_| || (_| || || (_| || | | | | || (_| | | |_| || (_) || (__ \__ \
+  |_|  |____/ /_/   \_\|_|     \__,_||_|    \__,_| \__,_||_| \__, ||_| |_| |_| \__,_| |____/  \___/  \___||___
+______________________________________________________________________________________________________________*/
+% -------------------------------------------REPRESENTACION--------------------------------------------------
 
-borrarPrimeraOcurrencia( Elemento, [H|Resto], Resto ):-
-    car(H,Nombre),
-    (Elemento == Nombre).
-borrarPrimeraOcurrencia( Elemento, [Cabeza|Resto], [Cabeza|Resultado] ) :-
-   % car(Cabeza,Nombre),
-	Elemento\=Cabeza, % Elemento no es la cabeza de la lista
-	borrarPrimeraOcurrencia( Elemento, Resto, Resultado ).
-% -------------------------TDA ParadigmaDocs----------------------------------
-% ---------------------------REPRESENTACION-----------------------------------
+% El TDA Paradigmadocs se representa a traves de una lista  (string X fecha X list X list X list) la cual 
+% contiene un nombre, una fecha y tres listas inicialmente vacias donde seran guardados los usuarios 
+% registrados, el usuario activo y los documentos.
 
-% El TDA Paradigmadocs se representa a traves de una lista 
-% (string X fecha X list X list X list) la cual contiene un nombre, una fecha y
-% tres listas inicialmente vacias donde seran guardados los usuarios registrados, 
-% el usuario activo y los documentos.
-
-% ---------------------------------CONSTRUCTOR-------------------------------
+% --------------------------------------------CONSTRUCTOR Y PERTENENCIA--------------------------------------
 
 % Dominio: Un nombre de tipo string, una fecha y un TDA ParadigmaDocs
 % Descripcion: Predicado que crea una plataforma de tipo paradigmaDocs
-paradigmaDocs(Nombre,Fecha,[Nombre,Fecha,[],[],[]]).
+paradigmaDocs(Nombre,Date,[Nombre,Date,[],[],[]]):-
+	string(Nombre),
+	is_list(Date),
+	length(Date,3),
+	getDiaFecha(Date,DD),
+	getMesFecha(Date,MM),
+	getAnioFecha(Date,AAAA),
+	date(DD,MM,AAAA,Date),!.
 
-% ---------------------------------SELECTORES---------------------------------
+% ---------------------------------------------SELECTORES-----------------------------------------------------
 
 % Dominio: Un paradigmaDocs y un nombre de tipo string
 % Descripcion: Predicado que obtiene el nombre de una plataforma de tipo ParadigmaDocs
-getNombrePdocs([Nombre|_],Nombre).
+getNombrePdocs([Nombre|_],Nombre):-
+	string(Nombre).
 
 % Dominio: Un paradigmaDocs y una fecha de tipo date
 % Descripcion: Predicado que obtiene la fecha de creacion de una plataforma de tipo ParadigmaDocs
 
-getDatePdocs([_,Date,_,_,_], Date).
+getDatePdocs([_,Date,_,_,_], Date):-
+	is_list(Date),
+	length(Date,3),
+	getDiaFecha(Date,DD),
+	getMesFecha(Date,MM),
+	getAnioFecha(Date,AAAA),
+	date(DD,MM,AAAA,Date),!.
 
 % Dominio: Un paradigmaDocs y una lista de usuarios registrados
 % Descripcion: Predicado que obtiene la lista de usuarios registrados de una plataforma de tipo ParadigmaDocs
-getRegistradosPdocs([_,_,Registrados,_,_],Registrados).
+getRegistradosPdocs([_,_,Registrados,_,_],Registrados):-
+	is_list(Registrados).
 
 % Dominio: Un paradigmaDocs y una lista de users activos
 % Descripcion: Predicado que obtiene la lista de User Activo de una plataforma de tipo ParadigmaDocs
-getActivosPdocs([_,_,_,Activos,_], Activos).
+getActivosPdocs([_,_,_,Activos,_], Activos):-
+	is_list(Activos).
 
-getUserActivo([UserAct], UserAct).
+% Dominio: Una lista de user activo proveniente de paradigmaDocs
+% Descripcion: Predicado que obtiene al user activo, si es que hay uno.
+getUserActivo([UserAct], UserAct):-
+	string(UserAct).
 
 % Dominio: Un paradigmaDocs y una lista de documentos
 % Descripcion: Predicado que obtiene la lista de documentos de una plataforma de tipo ParadigmaDocs
-getDocumentosPdocs([_,_,_,_,Docs], Docs).
+getDocumentosPdocs([_,_,_,_,Docs], Docs):-
+	is_list(Docs).
 
+% ---------------------------------------------MODIFICADORES---------------------------------------
+
+% Dominio: Un string, una date, tres listas, un integer y un TDA ParadigmaDocs
+% Descripcion: Predicado que crea un TDA ParadigmaDocs actualizado, donde cualquier parte de este puede
+% haber sido modificado
 paradigmadocsActualizado(Nombre,Fecha,ListRegistrados,ListActivo,ListDocumento,PDOUT):-
 	PDOUT = [Nombre, Fecha, ListRegistrados,ListActivo,ListDocumento].
 
+/*____________________________________________________________________________________________________
+  ____    ____    _____   ____    ___    ____      _      ____     ___    ____  
+ |  _ \  |  _ \  | ____| |  _ \  |_ _|  / ___|    / \    |  _ \   / _ \  / ___| 
+ | |_) | | |_) | |  _|   | | | |  | |  | |       / _ \   | | | | | | | | \___ \ 
+ |  __/  |  _ <  | |___  | |_| |  | |  | |___   / ___ \  | |_| | | |_| |  ___) |
+ |_|     |_| \_\ |_____| |____/  |___|  \____| /_/   \_\ |____/   \___/  |____/ 
+                                                                                
+   ___    ____    _       ___    ____      _      _____    ___    ____    ___    ___    ____  
+  / _ \  | __ )  | |     |_ _|  / ___|    / \    |_   _|  / _ \  |  _ \  |_ _|  / _ \  / ___| 
+ | | | | |  _ \  | |      | |  | |  _    / _ \     | |   | | | | | |_) |  | |  | | | | \___ \ 
+ | |_| | | |_) | | |___   | |  | |_| |  / ___ \    | |   | |_| | |  _ <   | |  | |_| |  ___) |
+  \___/  |____/  |_____| |___|  \____| /_/   \_\   |_|    \___/  |_| \_\ |___|  \___/  |____/ 
+_______________________________________________________________________________________________________*/
 
-% -------------------------------PREDICADOS OBLIGATORIOS--------------------------------------------
+% --------------------------------------PREDICADO PARADIGMADOCSREGISRER---------------------------------
 
-% Dominio: Fecha, string, string, TDA Paradigmadocs
+% Dominio: Un paradigmaDocs, una fecha (date), un username (string), un password (string) y un
+% paradigmaDocs actualizado
+% Descripcion: Predicado que registra a un usuario dentro de paradigmaDocs, dejando registro de su fecha
+% su username y su password dentro de la lista de users registrados. Si se intenta registrar a un usuario
+% que ya esta registrado o se intenta registrar de forma incorrecta, se retorna false. Si en Sn2 se coloca
+% a un paradigmaDocs que coincide con el paradigmaDocs resultante tras registrar al user, se retorna true,
+% caso contrario, retorna false.
 paradigmaDocsRegister(Sn1, Fecha, Username, Password, Sn2):-
 	string(Username),
 	string(Password),
@@ -412,7 +568,10 @@ paradigmaDocsRegister(Sn1, Fecha, Username, Password, Sn2):-
 	append(Users,[New],NewRegistrados),
 	paradigmadocsActualizado(NamePdocs, DatePdocs, NewRegistrados, Activo, Documents, Sn2).
 
-% Comentar Dominio
+% --------------------------------------PREDICADO PARADIGMADOCSLOGIN--------------------------------------
+
+% Dominio:
+% Descripcion:
 paradigmaDocsLogin(Sn1,Username,Password,Sn2):-
     string(Username),
     string(Password),
@@ -425,6 +584,8 @@ paradigmaDocsLogin(Sn1,Username,Password,Sn2):-
     append(Activo,[Username],NewActivo),
     paradigmadocsActualizado(NamePdocs,DatePdocs,Users,NewActivo,Documents, Sn2).
 
+% Dominio:
+% Descripcion:
 paradigmaDocsCreate(Sn1, Fecha, Nombre, Contenido, Sn2):-
 	string(Nombre),
 	string(Contenido),
@@ -440,6 +601,8 @@ paradigmaDocsCreate(Sn1, Fecha, Nombre, Contenido, Sn2):-
 	append(Documents, [Doc], NewDocuments),
 	paradigmadocsActualizado(NamePdocs, DatePdocs, Users, [], NewDocuments, Sn2).
 
+% Dominio:
+% Descripcion:
 paradigmaDocsShare(Sn1, DocumentId, ListaPermisos, ListaUsernamesPermitidos, Sn2):-
 	integer(DocumentId),
 	is_list(ListaPermisos),
@@ -469,6 +632,8 @@ paradigmaDocsShare(Sn1, DocumentId, ListaPermisos, ListaUsernamesPermitidos, Sn2
 	append(NewDocuments, [NewDocumento], DocumentsFinal),
 	paradigmadocsActualizado(NamePdocs, DatePdocs, Users, [], DocumentsFinal, Sn2).
 
+% Dominio:
+% Descripcion:
 paradigmaDocsAdd(Sn1, DocumentId, Date, ContenidoTexto, Sn2):-
 	integer(DocumentId),
 	string(ContenidoTexto),
