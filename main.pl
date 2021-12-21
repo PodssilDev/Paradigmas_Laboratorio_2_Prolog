@@ -78,6 +78,15 @@ getMesFecha([DD,MM,AAAA],MM) :-
 getAnioFecha([DD,MM,AAAA],AAAA) :-
 	date(DD,MM,AAAA,[DD,MM,AAAA]).
 
+% ---------------------------------------OTROS PREDICADOS------------------------------------------
+% Dominio: Una fecha y un string
+% Descripcion: Predicado que transforma una fecha en un string.
+fecha_to_string([D,M,Y],Retorno):-
+    string_concat(D,"/",S1),
+    string_concat(M,"/",S2),
+    string_concat(S1,S2,S3),
+    string_concat(S3,Y,Retorno).  
+
 /*_______________________________________________________________________________________________
   _____   ____       _        _   _                     
  |_   _| |  _ \     / \      | | | |  ___    ___   _ __ 
@@ -168,6 +177,13 @@ verificarListaUsuarios(UsersRegistrados, [Cabeza|Resto]):-
 	pertenece(Cabeza, UsersRegistrados),
 	verificarListaUsuarios(UsersRegistrados,Resto).
 
+obtenerDatosUser([UserActual|_], User, DatosUser):-
+	getUserName(UserActual, Username),
+	(User == Username),
+	DatosUser = UserActual.
+
+obtenerDatosUser([_|RestoUsers], User, DatosUser):-
+	obtenerDatosUser(RestoUsers, User, DatosUser).
 /*__________________________________________________________________________________________________
   _____   ____       _        _   _   _         _                    _           _ 
  |_   _| |  _ \     / \      | | | | (_)  ___  | |_    ___    _ __  (_)   __ _  | |
@@ -231,6 +247,20 @@ getTextoHistorial([_,Texto,_], Texto):-
 getIDHistorial([_,_,ID], ID):-
 	integer(ID).
 
+% -------------------------------------OTROS PREDICADOS-----------------------------------------------
+
+historialToString(Historial, StrOutH):-
+	getDateHistorial(Historial, DateH),
+	getTextoHistorial(Historial, TextoH),
+	getIDHistorial(Historial,IDH),
+	string_concat("Version Numero ", IDH, S1),
+	string_concat(S1, ": * ", S2),
+	string_concat(S2, TextoH, S3),
+	string_concat(S3, " * ", S4),
+	string_concat(S4, "version guardada en la fecha: ", S5),
+	fecha_to_string(DateH, DateString),
+	string_concat(S5, DateString, S6),
+	string_concat(S6, '\n', StrOutH).
 /*______________________________________________________________________________________________________
   _____   ____       _        ____                                                      _           
  |_   _| |  _ \     / \      |  _ \    ___     ___   _   _   _ __ ___     ___   _ __   | |_    ___  
@@ -469,6 +499,96 @@ encontrarPorIDHistorial([H|_],IDVersion,Retorno):-
     H = Retorno.
 encontrarPorIDHistorial([_|T],ID,Retorno):-
     encontrarPorIDHistorial(T,ID,Retorno).
+
+
+elementoPermisoString(ElementoC,StrOutEP):-
+	(ElementoC == "C"),
+	(StrOutEP = " tiene permisos de comentarios -").
+
+elementoPermisoString(ElementoS,StrOutEP):-
+	(ElementoS == "S"),
+	(StrOutEP = "  tiene permisos de compartir -").
+
+elementoPermisoString(ElementoW,StrOutEP):-
+	(ElementoW == "W"),
+	(StrOutEP = " tiene permisos de escritura -").
+
+elementoPermisoString(ElementoR,StrOutEP):-
+	(ElementoR == "R"),
+	(StrOutEP = " tiene permisos de lectura -").
+
+elementoPermisoString(Elemento,StrOutEP):-
+	string_concat(Elemento, ":", StrOutEp1),
+	(StrOutEP = StrOutEp1).
+
+permisosToString([], StrTemp, StrOut):-
+	(StrTemp = StrOut).
+
+permisosToString([H|T], StrTemp, StrOutP):-
+	elementoPermisoString(H, Str1),
+	string_concat(StrTemp, Str1, Str2),
+	permisosToString(T, Str2, StrOutP).
+
+fullAccessesToString([], StrTemp, StrOut):-
+	(StrTemp = StrOut).
+fullAccessesToString([FirstList|RestoList], StrTemp, StrOut):-
+	permisosToString(FirstList, "", StrOnePermiso),
+	string_concat(StrTemp, StrOnePermiso, StrTemp2),
+	string_concat(StrTemp2, '\n', StrTemp3),
+	fullAccessesToString(RestoList, StrTemp3, StrOut).
+
+documentoToString(Documento, StrDocument):-
+	string_concat("----------",'\n', S1),
+	string_concat(S1, "ID de Documento: ", S2),
+	getIDDocumento(Documento, IDDoc),
+	string_concat(S2, IDDoc, S3),
+	string_concat(S3, '\n', S4),
+	string_concat(S4, "Autor: ", S5),
+	getAutorDocumento(Documento, AutorDoc),
+	string_concat(S5, AutorDoc, S6),
+	string_concat(S6, '\n', S7),
+	string_concat(S7, "Fecha de creacion: ", S8),
+	getDateDocumento(Documento, DateDoc),
+	fecha_to_string(DateDoc, StringDate),
+	string_concat(S8, StringDate, S9),
+	string_concat(S9, '\n', S10),
+	string_concat(S10, "Contenido (Version actual) del Documento: ", S11),
+	getContenidoDocumento(Documento, VersionActual),
+	string_concat(S11, VersionActual, S12),
+	string_concat(S12, '\n', S13),
+	string_concat(S13, "Permisos: \n", S14),
+	getPermisosDocumento(Documento, Accesses),
+	fullAccessesToString(Accesses, "", AccessesString),
+	string_concat(S14, AccessesString, S15),
+	string_concat(S15, "Historial de Versiones: \n", S16),
+	getHistorialDocumento(Documento, HistorialDoc),
+	maplist(historialToString, HistorialDoc, HistorialString),
+	atomics_to_string(HistorialString, HistorialStringFull),
+	string_concat(S16, HistorialStringFull, S17),
+	string_concat(S17, "----------\n", StrDocument).
+
+
+
+puedeAcceder([PrimeraListaPermisos|_],User):-
+	primerElemento(PrimeraListaPermisos, FirstName),
+	(User == FirstName).
+
+puedeAcceder([_|RestoListaPermisos], User):-
+	puedeAcceder(RestoListaPermisos, User).
+
+
+obtenerDocsAcceso([], _, ListTemp, ListFinal):-
+	(ListFinal = ListTemp).
+obtenerDocsAcceso([FirstDocument|RestoDocuments], User, ListTemp, ListFinal):-
+	getPermisosDocumento(FirstDocument, Permisos),
+	puedeAcceder(Permisos, User),
+	append(ListTemp, [FirstDocument], ListaTemp2),
+	obtenerDocsAcceso(RestoDocuments, User, ListaTemp2, ListFinal).
+
+obtenerDocsAcceso([_|RestoDocuments], User, ListTemp, ListFinal):-
+	obtenerDocsAcceso(RestoDocuments, User, ListTemp, ListFinal).
+
+
 
 /*____________________________________________________________________________________________________________
  _____  ____      _     ____                          _  _                            ____                       
@@ -727,7 +847,27 @@ paradigmaDocsRestoreVersion(Sn1, DocumentId, IdVersion, Sn2):-
 
 % Dominio:
 % Descripcion:
-% paradigmaDocsToString(Sn1, StrOut):-
+%paradigmaDocsToString(Sn1, StrOut):-
+
+paradigmaDocsToString(Sn1, StrOutUL):-
+	getActivosPdocs(Sn1,Activo),
+	length(Activo,1),
+	getUserActivo(Activo,UserActivo),
+	string_concat("---------- \nNombre de Usuario: ", UserActivo, S1),
+	string_concat(S1, '\n', S2),
+	getRegistradosPdocs(Sn1, Users),
+	getDocumentosPdocs(Sn1, Documents),
+	obtenerDatosUser(Users, UserActivo, DataUser),
+	getUserDate(DataUser, UserDate),
+	fecha_to_string(UserDate, StringDate),
+	string_concat(S2, "Fecha de registro: ", S3),
+	string_concat(S3, StringDate, S4),
+	string_concat(S4, '\n', S5),
+	string_concat(S5, "Los documentos propios del usuario o los que tiene acceso son: \n", S6),
+	obtenerDocsAcceso(Documents, UserActivo, [], AllDocsUser),
+	maplist(documentoToString, AllDocsUser, ListDocsString),
+	atomics_to_string(ListDocsString, RealDocsStrings),
+	string_concat(S6, RealDocsStrings, StrOutUL).
 
 /*______________________________________________________________________________________________________
   _____       _   _____   __  __   ____    _        ___    ____  
@@ -746,3 +886,4 @@ ________________________________________________________________________________
 % date(20, 12, 2021, D1), date(21,12,2021, D2), date(3,1,2022,D3), paradigmaDocs("gDocs", D1, PD1), paradigmaDocsRegister(PD1,D1,"user1", "pass1", PD2), paradigmaDocsRegister(PD2,D2,"user2", "pass2", PD3), paradigmaDocsRegister(PD3,D3,"user3", "pass3", PD4), paradigmaDocsLogin(PD4, "user1", "pass1", PD5), paradigmaDocsCreate(PD5, D1, "lab1","scheme", PD6).
 % date(20, 12, 2021, D1), date(21,12,2021, D2), date(3,1,2022,D3), paradigmaDocs("gDocs", D1, PD1), paradigmaDocsRegister(PD1,D1,"user1", "pass1", PD2), paradigmaDocsRegister(PD2,D2,"user2", "pass2", PD3), paradigmaDocsRegister(PD3,D3,"user3", "pass3", PD4), paradigmaDocsLogin(PD4, "user1", "pass1", PD5), paradigmaDocsCreate(PD5, D1, "lab1","scheme", PD6), paradigmaDocsLogin(PD6, "user1", "pass1", PD7), paradigmaDocsAdd(PD7, 0, D2, "newtext", PD8).
 % date(20, 12, 2021, D1), date(21,12,2021, D2), date(3,1,2022,D3), paradigmaDocs("gDocs", D1, PD1), paradigmaDocsRegister(PD1,D1,"user1", "pass1", PD2), paradigmaDocsRegister(PD2,D2,"user2", "pass2", PD3), paradigmaDocsRegister(PD3,D3,"user3", "pass3", PD4), paradigmaDocsLogin(PD4, "user1", "pass1", PD5), paradigmaDocsCreate(PD5, D1, "lab1","scheme", PD6), paradigmaDocsLogin(PD6, "user1", "pass1", PD7), paradigmaDocsAdd(PD7, 0, D2, "newtext", PD8), paradigmaDocsLogin(PD8, "user1", "pass1", PD9), paradigmaDocsRestoreVersion(PD9, 0, 0, PD10).
+% DOCUMENTAR ARIDAD
