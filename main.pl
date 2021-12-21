@@ -184,6 +184,18 @@ obtenerDatosUser([UserActual|_], User, DatosUser):-
 
 obtenerDatosUser([_|RestoUsers], User, DatosUser):-
 	obtenerDatosUser(RestoUsers, User, DatosUser).
+
+userToString(User, StrOut):-
+	getUserName(User, Name),
+	getUserDate(User, Date),
+	getUserPass(User, Password),
+	fecha_to_string(Date, DateString),
+	string_concat("---------- \nUsername: ", Name, S1),
+	string_concat(S1, "\nPassword: ", S2),
+	string_concat(S2, Password, S3),
+	string_concat(S3, "\nFecha de registro: ", S4),
+	string_concat(S4, DateString, S5),
+	string_concat(S5, "\n----------\n", StrOut).
 /*__________________________________________________________________________________________________
   _____   ____       _        _   _   _         _                    _           _ 
  |_   _| |  _ \     / \      | | | | (_)  ___  | |_    ___    _ __  (_)   __ _  | |
@@ -847,7 +859,26 @@ paradigmaDocsRestoreVersion(Sn1, DocumentId, IdVersion, Sn2):-
 
 % Dominio:
 % Descripcion:
-%paradigmaDocsToString(Sn1, StrOut):-
+paradigmaDocsToString(Sn1, StrOut):-
+	getActivosPdocs(Sn1, Activo),
+	length(Activo, 0),
+	getNombrePdocs(Sn1, NamePdocs),
+	string_concat("---------- \nNombre de la plataforma: ", NamePdocs, S1),
+	string_concat(S1, "\nFecha de creacion: ", S2),
+	getDatePdocs(Sn1, DatePdocs),
+	fecha_to_string(DatePdocs, DatePdocsString),
+	string_concat(S2, DatePdocsString, S3),
+	string_concat(S3, "\nUsuarios registrados en la plataforma: \n", S4),
+	getRegistradosPdocs(Sn1,UsersRegistrados),
+	maplist(userToString, UsersRegistrados, UserStringList),
+	atomics_to_string(UserStringList, UsersString),
+	string_concat(S4, UsersString, S5),
+	string_concat(S5, "Documentos creados en la plataforma: \n", S6),
+	getDocumentosPdocs(Sn1, Documents),
+	maplist(documentoToString, Documents, ListDocsString),
+	atomics_to_string(ListDocsString, RealDocsStrings),
+	string_concat(S6, RealDocsStrings, StrOut), !.
+
 
 paradigmaDocsToString(Sn1, StrOutUL):-
 	getActivosPdocs(Sn1,Activo),
@@ -867,7 +898,7 @@ paradigmaDocsToString(Sn1, StrOutUL):-
 	obtenerDocsAcceso(Documents, UserActivo, [], AllDocsUser),
 	maplist(documentoToString, AllDocsUser, ListDocsString),
 	atomics_to_string(ListDocsString, RealDocsStrings),
-	string_concat(S6, RealDocsStrings, StrOutUL).
+	string_concat(S6, RealDocsStrings, StrOutUL), !.
 
 /*______________________________________________________________________________________________________
   _____       _   _____   __  __   ____    _        ___    ____  
