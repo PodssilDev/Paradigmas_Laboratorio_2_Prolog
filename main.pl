@@ -900,6 +900,63 @@ paradigmaDocsToString(Sn1, StrOutUL):-
 	atomics_to_string(ListDocsString, RealDocsStrings),
 	string_concat(S6, RealDocsStrings, StrOutUL), !.
 
+paradigmaDocsDelete(Sn1, DocumentId,  Date, NumberOfCharacters, Sn2):-
+	getActivosPdocs(Sn1,Activo),
+	length(Activo,1),
+	getUserActivo(Activo, UserActivo),
+	getDocumentosPdocs(Sn1, Documents),
+	getNombrePdocs(Sn1,NamePdocs),
+	getDatePdocs(Sn1,DatePdocs),
+	getRegistradosPdocs(Sn1,Users),
+	encontrarPorIDDocumento(Documents, DocumentId, DocEditar),
+	getContenidoDocumento(DocEditar, Text),
+	getPermisosDocumento(DocEditar, PermisosDoc),
+	string_length(Text, LengthText),
+	puedeEditar(PermisosDoc, UserActivo),
+	(LengthText >= NumberOfCharacters),
+	sub_string(Text, 0,_, NumberOfCharacters, NewContent),
+	getAutorDocumento(DocEditar, Autor),
+	getDateDocumento(DocEditar, DateDoc),
+	getNameDocumento(DocEditar, NameDoc),
+	getHistorialDocumento(DocEditar, HistorialDoc),
+	length(HistorialDoc, IDVersion),
+	historial(Date, NewContent, IDVersion, NewHistorialVer),
+	append(HistorialDoc, [NewHistorialVer], NewHistorialDoc),
+	NewDocumento = [Autor, DateDoc, NameDoc, NewContent, PermisosDoc, NewHistorialDoc, DocumentId],
+	borrarDocDuplicado(DocEditar, Documents, NewDocuments),
+	append(NewDocuments, [NewDocumento], DocumentsFinal),
+	paradigmadocsActualizado(NamePdocs, DatePdocs, Users, [], DocumentsFinal, Sn2), !.
+
+paradigmaDocsDelete(Sn1, DocumentId,  Date, NumberOfCharacters, Sn2_):-
+	getActivosPdocs(Sn1,Activo),
+	length(Activo,1),
+	getUserActivo(Activo, UserActivo),
+	getDocumentosPdocs(Sn1, Documents),
+	getNombrePdocs(Sn1,NamePdocs),
+	getDatePdocs(Sn1,DatePdocs),
+	getRegistradosPdocs(Sn1,Users),
+	encontrarPorIDDocumento(Documents, DocumentId, DocEditar),
+	getContenidoDocumento(DocEditar, Text),
+	getPermisosDocumento(DocEditar, PermisosDoc),
+	string_length(Text, LengthText),
+	puedeEditar(PermisosDoc, UserActivo),
+	(LengthText < NumberOfCharacters),
+	(NewContent = ""),
+	getAutorDocumento(DocEditar, Autor),
+	getDateDocumento(DocEditar, DateDoc),
+	getNameDocumento(DocEditar, NameDoc),
+	getHistorialDocumento(DocEditar, HistorialDoc),
+	length(HistorialDoc, IDVersion),
+	historial(Date, NewContent, IDVersion, NewHistorialVer),
+	append(HistorialDoc, [NewHistorialVer], NewHistorialDoc),
+	NewDocumento = [Autor, DateDoc, NameDoc, NewContent, PermisosDoc, NewHistorialDoc, DocumentId],
+	borrarDocDuplicado(DocEditar, Documents, NewDocuments),
+	append(NewDocuments, [NewDocumento], DocumentsFinal),
+	paradigmadocsActualizado(NamePdocs, DatePdocs, Users, [], DocumentsFinal, Sn2_), !.
+
+
+
+	
 /*______________________________________________________________________________________________________
   _____       _   _____   __  __   ____    _        ___    ____  
  | ____|     | | | ____| |  \/  | |  _ \  | |      / _ \  / ___| 
