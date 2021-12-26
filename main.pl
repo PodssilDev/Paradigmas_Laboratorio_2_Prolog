@@ -600,8 +600,16 @@ obtenerDocsAcceso([FirstDocument|RestoDocuments], User, ListTemp, ListFinal):-
 obtenerDocsAcceso([_|RestoDocuments], User, ListTemp, ListFinal):-
 	obtenerDocsAcceso(RestoDocuments, User, ListTemp, ListFinal).
 
+searchInDocuments([],_, TempList, DocsTextFound):-
+	TempList = DocsTextFound, !.
 
+searchInDocuments([PrimerContenido| RestoContenido], SearchText, TempList, DocsTextFound):-
+	sub_string(PrimerContenido, _, _, _, SearchText),
+	append(TempList, [PrimerContenido], NewTempList),
+	searchInDocuments(RestoContenido, SearchText, NewTempList, DocsTextFound).
 
+searchInDocuments([_|RestoContenido], SearchText, TempList, DocsTextFound):-
+	searchInDocuments(RestoContenido, SearchText, TempList, DocsTextFound).
 /*____________________________________________________________________________________________________________
  _____  ____      _     ____                          _  _                            ____                       
 |_   _||  _ \    / \   |  _ \   __ _  _ __   __ _   __| |(_)  __ _  _ __ ___    __ _  |  _ \   ___    ___  ___ 
@@ -900,6 +908,7 @@ paradigmaDocsToString(Sn1, StrOutUL):-
 	atomics_to_string(ListDocsString, RealDocsStrings),
 	string_concat(S6, RealDocsStrings, StrOutUL), !.
 
+% --------------------------------PREDICADO PARADIGMADOCSDELETE--------------------------------------
 paradigmaDocsDelete(Sn1, DocumentId,  Date, NumberOfCharacters, Sn2):-
 	getActivosPdocs(Sn1,Activo),
 	length(Activo,1),
@@ -954,7 +963,16 @@ paradigmaDocsDelete(Sn1, DocumentId,  Date, NumberOfCharacters, Sn2_):-
 	append(NewDocuments, [NewDocumento], DocumentsFinal),
 	paradigmadocsActualizado(NamePdocs, DatePdocs, Users, [], DocumentsFinal, Sn2_), !.
 
-
+% --------------------------------PREDICADO PARADIGMADOCSSEARCH--------------------------------------
+paradigmaDocsSearch(Sn1, SearchText,  Sn2):-
+	getActivosPdocs(Sn1,Activo),
+	length(Activo,1),
+	getUserActivo(Activo, UserActivo),
+	getDocumentosPdocs(Sn1, Documents),
+	obtenerDocsAcceso(Documents, UserActivo, [], AllDocsUser),
+	maplist(getContenidoDocumento, AllDocsUser, ContentDocuments),
+	searchInDocuments(ContentDocuments, SearchText, [], DocsTextFound),
+	DocsTextFound = Sn2, !.
 
 	
 /*______________________________________________________________________________________________________
