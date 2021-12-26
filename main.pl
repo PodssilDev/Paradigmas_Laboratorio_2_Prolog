@@ -644,6 +644,24 @@ unirBusquedas(DocsTextFound, [PrimerDocumento| RestoDocumentos], DocsFinal):-
 
 unirBusquedas(DocsTextFound, [_|RestoDocumentos], DocsFinal):-
 	unirBusquedas(DocsTextFound, RestoDocumentos, DocsFinal).
+
+reemplazarPalabras(TextoOriginal, Text1, Text2, ListTemp, TextFinal):-
+	not(member(TextoOriginal, ListTemp)),
+	append(ListTemp, [TextoOriginal], NewListTemp),
+	re_replace(Text1, Text2, TextoOriginal, NewTextoOriginal),
+	reemplazarPalabras(NewTextoOriginal, Text1, Text2, NewListTemp, TextFinal), !.
+
+reemplazarPalabras(TextoOriginal, _,_,_,TextFinal):-
+	TextoOriginal = TextFinal, !.
+
+eliminarTodosLosPermisos(Document, NewDocument):-
+	getAutorDocumento(Document, AutorDoc),
+	getDateDocumento(Document, DateDoc),
+	getNameDocumento(Document, NameDoc),
+	getContenidoDocumento(Document, TextDoc),
+	getHistorialDocumento(Document, HistorialDoc),
+	getIDDocumento(Document, IDDoc),
+	NewDocument = [AutorDoc, DateDoc, NameDoc, TextDoc, [[AutorDoc, "R", "W", "C", "S"]], HistorialDoc, IDDoc].
 /*____________________________________________________________________________________________________________
  _____  ____      _     ____                          _  _                            ____                       
 |_   _||  _ \    / \   |  _ \   __ _  _ __   __ _   __| |(_)  __ _  _ __ ___    __ _  |  _ \   ___    ___  ___ 
@@ -942,6 +960,9 @@ paradigmaDocsToString(Sn1, StrOutUL):-
 	atomics_to_string(ListDocsString, RealDocsStrings),
 	string_concat(S6, RealDocsStrings, StrOutUL), !.
 
+% --------------------------------PREDICADO PARADIGMADOCSREVOKEALACCESSES----------------------------
+
+
 % --------------------------------PREDICADO PARADIGMADOCSDELETE--------------------------------------
 paradigmaDocsDelete(Sn1, DocumentId,  Date, NumberOfCharacters, Sn2):-
 	getActivosPdocs(Sn1,Activo),
@@ -1009,6 +1030,45 @@ paradigmaDocsSearch(Sn1, SearchText,  Sn2):-
 	searchInDocsHist(AllDocsUser, SearchText, [], DocsHistTextFound),
 	unirBusquedas(DocsTextFound, DocsHistTextFound, DocsTextFinal),
 	DocsTextFinal = Sn2, !.
+
+% --------------------------------PREDICADO PARADIGMADOCSSEARCHANDREPLACE-----------------------------
+
+paradigmaDocsSearchAndReplace(Sn1, DocumentId, Text1, Text2, Sn2):-
+	getActivosPdocs(Sn1,Activo),
+	length(Activo,1),
+	getUserActivo(Activo, UserActivo),
+	getDocumentosPdocs(Sn1, Documents),
+	encontrarPorIDDocumento(Documents,DocumentId,DocEditar),
+	getPermisosDocumento(DocEditar, PermisosDoc),
+	puedeEditar(PermisosDoc, UserActivo),
+	getContenidoDocumento(DocEditar, TextDocumento),
+	sub_string(TextDocumento, _, _, _, Text1),
+	getNombrePdocs(Sn1, NamePdocs),
+	getDatePdocs(Sn1, DatePdocs),
+	getRegistradosPdocs(Sn1, Users),
+	reemplazarPalabras(TextDocumento, Text1, Text2, [], NewTexto),
+	getAutorDocumento(DocEditar, AutorDoc),
+	getDateDocumento(DocEditar, DateDoc),
+	getHistorialDocumento(DocEditar, HistorialDoc),
+	getNameDocumento(DocEditar, NameDoc),
+	length(HistorialDoc, NewIDVersion),
+	historial(DateDoc, NewTexto, NewIDVersion, NewVersionHist),
+	append(HistorialDoc, [NewVersionHist], NewHistorialDoc),
+	NewDocumento = [AutorDoc, DateDoc, NameDoc, NewTexto, PermisosDoc, NewHistorialDoc, DocumentId],
+	borrarDocDuplicado(DocEditar, Documents, NewDocuments),
+	append(NewDocuments, [NewDocumento], DocumentsFinal),
+	paradigmadocsActualizado(NamePdocs,DatePdocs,Users,[],DocumentsFinal, Sn2).
+
+paradigmaDocsSearchAndReplace(Sn1, _, _, _, Sn2):-
+	getActivosPdocs(Sn1,Activo),
+	length(Activo,1),
+	write("No se encontraron coincidencias de busqueda y por lo tanto no se puede reemplazar el texto."),
+	getNombrePdocs(Sn1, NamePdocs),
+	getDatePdocs(Sn1, DatePdocs),
+	getDocumentosPdocs(Sn1, Documents),
+	getRegistradosPdocs(Sn1, Users),
+	paradigmadocsActualizado(NamePdocs,DatePdocs,Users,[],Documents, Sn2).
+
 
 	
 /*______________________________________________________________________________________________________
