@@ -273,6 +273,13 @@ historialToString(Historial, StrOutH):-
 	fecha_to_string(DateH, DateString),
 	string_concat(S5, DateString, S6),
 	string_concat(S6, '\n', StrOutH).
+
+searchInHistorial([PrimerContenido|_], SearchText):-
+	sub_string(PrimerContenido, _, _, _, SearchText).
+
+searchInHistorial([_|RestoContenido], SearchText):-
+	searchInHistorial(RestoContenido, SearchText).
+
 /*______________________________________________________________________________________________________
   _____   ____       _        ____                                                      _           
  |_   _| |  _ \     / \      |  _ \    ___     ___   _   _   _ __ ___     ___   _ __   | |_    ___  
@@ -610,6 +617,33 @@ searchInDocuments([PrimerContenido| RestoContenido], SearchText, TempList, DocsT
 
 searchInDocuments([_|RestoContenido], SearchText, TempList, DocsTextFound):-
 	searchInDocuments(RestoContenido, SearchText, TempList, DocsTextFound).
+
+
+searchInDocsHist([], _, TempList, DocsHistTextFound):-
+	TempList = DocsHistTextFound, !.
+
+
+searchInDocsHist([PrimerDocumento|RestoDocumentos], SearchText, TempList, DocsHistTextFound):-
+	getHistorialDocumento(PrimerDocumento, HistList),
+	maplist(getTextoHistorial, HistList, TextHist),
+	searchInHistorial(TextHist, SearchText),
+	append(TempList, [PrimerDocumento], NewTempList),
+	searchInDocsHist(RestoDocumentos, SearchText, NewTempList, DocsHistTextFound).
+
+searchInDocsHist([_|RestoDocumentos], SearchText, TempList, DocsHistTextFound):-
+	searchInDocsHist(RestoDocumentos, SearchText, TempList, DocsHistTextFound).
+
+unirBusquedas(DocsTextFound, [],DocsFinal):-
+	DocsTextFound = DocsFinal, !.
+
+unirBusquedas(DocsTextFound, [PrimerDocumento| RestoDocumentos], DocsFinal):-
+	not(member(PrimerDocumento, DocsTextFound)),
+	append(DocsTextFound, [PrimerDocumento], NewDocsList),
+	unirBusquedas(NewDocsList, RestoDocumentos, DocsFinal).
+	
+
+unirBusquedas(DocsTextFound, [_|RestoDocumentos], DocsFinal):-
+	unirBusquedas(DocsTextFound, RestoDocumentos, DocsFinal).
 /*____________________________________________________________________________________________________________
  _____  ____      _     ____                          _  _                            ____                       
 |_   _||  _ \    / \   |  _ \   __ _  _ __   __ _   __| |(_)  __ _  _ __ ___    __ _  |  _ \   ___    ___  ___ 
@@ -972,7 +1006,9 @@ paradigmaDocsSearch(Sn1, SearchText,  Sn2):-
 	obtenerDocsAcceso(Documents, UserActivo, [], AllDocsUser),
 	maplist(getContenidoDocumento, AllDocsUser, ContentDocuments),
 	searchInDocuments(ContentDocuments, SearchText, [], DocsTextFound),
-	DocsTextFound = Sn2, !.
+	searchInDocsHist(AllDocsUser, SearchText, [], DocsHistTextFound),
+	unirBusquedas(DocsTextFound, DocsHistTextFound, DocsTextFinal),
+	DocsTextFinal = Sn2, !.
 
 	
 /*______________________________________________________________________________________________________
