@@ -662,6 +662,50 @@ eliminarTodosLosPermisos(Document, NewDocument):-
 	getHistorialDocumento(Document, HistorialDoc),
 	getIDDocumento(Document, IDDoc),
 	NewDocument = [AutorDoc, DateDoc, NameDoc, TextDoc, [[AutorDoc, "R", "W", "C", "S"]], HistorialDoc, IDDoc].
+
+
+obtenerDocumentosPropios([], _,_,TempList, ListFinal):-
+	TempList = ListFinal.
+
+obtenerDocumentosPropios([PrimerID|RestoIDs], Documents, UserActivo, TempList, ListFinal):-
+	encontrarPorIDDocumento(Documents, PrimerID, DocumentEncontrado),
+	getAutorDocumento(DocumentEncontrado, AutorDoc),
+	AutorDoc == UserActivo,
+	append(TempList, [DocumentEncontrado], NewTempList),
+	obtenerDocumentosPropios(RestoIDs, Documents, UserActivo, NewTempList, ListFinal).
+
+obtenerDocumentosPropios([_|RestoIDs], Documents, UserActivo, TempList, ListFinal):-
+	obtenerDocumentosPropios(RestoIDs, Documents, UserActivo, TempList, ListFinal).
+
+
+eliminarDocsDuplicados([], Documents,  DocumentsFinal):-
+	Documents = DocumentsFinal.
+eliminarDocsDuplicados([PrimerDocumento|RestoDocumentos], Documents,  DocumentsFinal):-
+	borrarDocDuplicado(PrimerDocumento, Documents, NewDocuments),
+	eliminarDocsDuplicados(RestoDocumentos, NewDocuments, DocumentsFinal).
+
+eliminarDocsDuplicados([_|RestoDocumentos], Documents,  DocumentsFinal):-
+	eliminarDocsDuplicados(RestoDocumentos, Documents,  DocumentsFinal).
+
+agregarNuevosDocs([], Documents,  DocumentsFinal):-
+	Documents = DocumentsFinal.
+agregarNuevosDocs([PrimerDocumento|RestoDocumentos], Documents,  DocumentsFinal):-
+	append(Documents, [PrimerDocumento], NewDocuments),
+	agregarNuevosDocs(RestoDocumentos, NewDocuments, DocumentsFinal).
+
+agregarNuevosDocs([_|RestoDocumentos], Documents,  DocumentsFinal):-
+	agregarNuevosDocs(RestoDocumentos, Documents,  DocumentsFinal).
+
+obtenerDocumentosPorAutor([], _, TempList, ListFinal):-
+	TempList = ListFinal.
+obtenerDocumentosPorAutor([PrimerDocumento|RestoDocumentos], User, TempList, ListFinal):-
+	getAutorDocumento(PrimerDocumento, AutorDoc),
+	AutorDoc == User,
+	append(TempList, [PrimerDocumento], NewTempList),
+	obtenerDocumentosPorAutor(RestoDocumentos, User, NewTempList, ListFinal).
+
+obtenerDocumentosPorAutor([_|RestoDocumentos], User, TempList, ListFinal):-
+	obtenerDocumentosPorAutor(RestoDocumentos, User, TempList, ListFinal).
 /*____________________________________________________________________________________________________________
  _____  ____      _     ____                          _  _                            ____                       
 |_   _||  _ \    / \   |  _ \   __ _  _ __   __ _   __| |(_)  __ _  _ __ ___    __ _  |  _ \   ___    ___  ___ 
@@ -962,6 +1006,35 @@ paradigmaDocsToString(Sn1, StrOutUL):-
 
 % --------------------------------PREDICADO PARADIGMADOCSREVOKEALACCESSES----------------------------
 
+paradigmaDocsRevokeAllAccesses(Sn1,DocumentIds, Sn2):-
+	getActivosPdocs(Sn1,Activo),
+	length(Activo,1),
+	getUserActivo(Activo, UserActivo),
+	getDocumentosPdocs(Sn1, Documents),
+	not(length(DocumentIds, 0)),
+	obtenerDocumentosPropios(DocumentIds, Documents, UserActivo, [], DocumentosPropios),
+	maplist(eliminarTodosLosPermisos, DocumentosPropios, DocumentosSinPermisos),
+	eliminarDocsDuplicados(DocumentosPropios, Documents, NewDocuments),
+	agregarNuevosDocs(DocumentosSinPermisos, NewDocuments, NewDocuments2),
+	getNombrePdocs(Sn1, NamePdocs),
+	getDatePdocs(Sn1, DatePdocs),
+	getRegistradosPdocs(Sn1, Users),
+	paradigmadocsActualizado(NamePdocs, DatePdocs, Users, [], NewDocuments2, Sn2).
+
+paradigmaDocsRevokeAllAccesses(Sn1,DocumentIds, Sn2Altern):-
+	getActivosPdocs(Sn1,Activo),
+	length(Activo,1),
+	getUserActivo(Activo, UserActivo),
+	getDocumentosPdocs(Sn1, Documents),
+	length(DocumentIds, 0),
+	obtenerDocumentosPorAutor(Documents, UserActivo,[], DocumentosPropios),
+	maplist(eliminarTodosLosPermisos, DocumentosPropios, DocumentosSinPermisos),
+	eliminarDocsDuplicados(DocumentosPropios, Documents, NewDocuments),
+	agregarNuevosDocs(DocumentosSinPermisos, NewDocuments, NewDocuments2),
+	getNombrePdocs(Sn1, NamePdocs),
+	getDatePdocs(Sn1, DatePdocs),
+	getRegistradosPdocs(Sn1, Users),
+	paradigmadocsActualizado(NamePdocs, DatePdocs, Users, [], NewDocuments2, Sn2Altern).
 
 % --------------------------------PREDICADO PARADIGMADOCSDELETE--------------------------------------
 paradigmaDocsDelete(Sn1, DocumentId,  Date, NumberOfCharacters, Sn2):-
