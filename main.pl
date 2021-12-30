@@ -5,7 +5,9 @@
  | |___   / ___ \  | |_) |    / __/   _    |  __/  |  _ <  | |_| | | |___  | |_| | | |_| |
  |_____| /_/   \_\ |____/    |_____| (_)   |_|     |_| \_\  \___/  |_____|  \___/   \____|
 _____________________________________________________________________________________________*/
-
+% Nombre: John Serrano Carrasco
+% Seccion: 13310-A-1
+% Profesor de seccion: Roberto Gonzales Ibanez
 
 /*____________________________________________________________________________________________
   _____   ____       _        _____                 _             
@@ -16,17 +18,20 @@ ________________________________________________________________________________
 _______________________________________________________________________________________________*/
 
 % Dominio:
-% cantidad_dias: Entero
-% DD: Entero
-% MM: Entero
-% AAAA: Entero
+% Fecha: Fecha
+% Dias, DD, MM, AAAA: Enteros
+% StrOut: String
 
 %  Precidados:  
-% mes(MM, cantidad_dias)
-% date(DD, MM, AAAA)
-% getDiaFecha([DD,MM,AAAA], DD)
-% getMesFecha([DD,MM,AAAA], MM)
-% getAnioFecha([DD,MM,AAAA], AAAA)
+% mes(MM, Dias). (aridad = 2)
+% date(DD, MM, AAAA) (aridad = 3)
+% getDiaFecha(Fecha, DD) (aridad = 2)
+% getMesFecha(Fecha, MM) (aridad = 2)
+% getAnioFecha(Fecha, AAAA) (aridad = 2)
+% fecha_to_string(Fecha, StrOut) (aridad = 2)
+
+% Metas primarias: getDiaFecha, getMesFecha, getAnioFecha y fecha_to_string
+% Metas secundarias: mes y date
 
 % ---------------------------REPRESENTACION-------------------------------------------------------
 
@@ -79,13 +84,14 @@ getAnioFecha([DD,MM,AAAA],AAAA) :-
 	date(DD,MM,AAAA,[DD,MM,AAAA]).
 
 % ---------------------------------------OTROS PREDICADOS------------------------------------------
-% Dominio: Una fecha y un string
+
+% Dominio: Una fecha (lista de tres integers) y un string
 % Descripcion: Predicado que transforma una fecha en un string.
-fecha_to_string([D,M,Y],Retorno):-
-    string_concat(D,"/",S1),
-    string_concat(M,"/",S2),
+fecha_to_string([DD,MM,AAAA],StrOut):-
+    string_concat(DD,"/",S1),
+    string_concat(MM,"/",S2),
     string_concat(S1,S2,S3),
-    string_concat(S3,Y,Retorno).  
+    string_concat(S3,AAAA,StrOut).  
 
 /*_______________________________________________________________________________________________
   _____   ____       _        _   _                     
@@ -96,19 +102,25 @@ fecha_to_string([D,M,Y],Retorno):-
 __________________________________________________________________________________________________*/
 
 % Dominio:
-% Date: Date
-% Nombre: String
-% Password: String
+% User: User
+% Date: Fecha (lista de 3 integers)
+% Nombre, Password, StrOut: String
+% UserList, UserNameList: List
 
 % Predicados:
-% user(Date,Nombre,Password,[Date,Nombre,Password])
-% getUserDate([Date,Nombre,Password], Date)
-% getUserName([Date,Nombre,Password], Nombre)
-% getUserPass([Date,Nombre,Password], Password)
-% pertenece(Nombre,[[_,Nombre,_]|_])
-% pertenece(Nombre,[[_,_,_]|Resto])
-% buscarUsuarioPassword([H|_],Usuario,Password):
-% buscarUsuarioPassword([_|T],Usuario,Password)
+% user(Date,Nombre,Password,[Date,Nombre,Password]) (aridad = 4)
+% getUserDate(User, Date) (aridad = 2)
+% getUserName(User, Nombre) (aridad = 2)
+% getUserPass(User,  Password) (aridad = 2)
+% pertenece(Nombre,UserList) (aridad = 2)
+% buscarUsuarioPassword(UserList, Usuario, Password) (aridad = 2)
+% verificarListaUsuarios(UsersList, UserNameList) (aridad = 2)
+% obtenerDatosUser(UserList, Nombre, User) (aridad = 3)
+% userToString(User, StrOut) (aridad = 2)
+
+% Metas primarias: buscarUsuarioPassword, verificarListaUsuarios, obtenerDatosUser, userToString
+% Metas secundarias: Todos los selectores del TDA Fecha, user, getUserDate, getUserName, getUserPass
+% pertenece.
 
 % -------------------------------------REPRESENTACION----------------------------------------------
 
@@ -151,16 +163,16 @@ getUserPass([Date,Nombre,Password], Password):-
 
 % ---------------------------------------OTROS PREDICADOS------------------------------------------
 
-% Dominio: Un Nombre (string) y un User
+% Dominio: Un Nombre (string) y un UserList
 % Descripcion: Caso base de pertenece. Si el nombre es igual al nombre del User
 % entonces el predicado da true.
 pertenece(Nombre,[[_,Nombre,_]|_]):- !.
 pertenece(Nombre,[[_,_,_]|OtherUsers]):-
             pertenece(Nombre,OtherUsers).
 
-% Dominio: Un user, un username (string) y un password (string)
+% Dominio: Una lista de users, un username (string) y un password (string)
 % Descripcion: Verifica si existe un User en la lista de Users tal que el username y
-%  password coincidan con los ingresados por entrada
+% password coincidan con los ingresados por entrada
 buscarUsuarioPassword([UserActual|_],Usuario,Password):-
     getUserName(UserActual,Username),
     getUserPass(UserActual,Contrasena),
@@ -173,18 +185,22 @@ buscarUsuarioPassword([_|OtherUsers],Usuario,Password):-
 % Descripcion: Predicado que verifica si todos los usernames de una lista pertenecen a los usernames
 % de usuarios en otra lista (En este caso, en la lista de registrados de paradigmaDocs)
 verificarListaUsuarios(_, []):- !.
-verificarListaUsuarios(UsersRegistrados, [Cabeza|Resto]):-
-	pertenece(Cabeza, UsersRegistrados),
-	verificarListaUsuarios(UsersRegistrados,Resto).
+verificarListaUsuarios(UsersRegistrados, [UserNameActual|OtherUserNames]):-
+	pertenece(UserNameActual, UsersRegistrados),
+	verificarListaUsuarios(UsersRegistrados,OtherUserNames).
 
+% Dominio: Una lista de usuarios, un username y un user
+% Descripcion: Predicado que revisa si un User esta en una lista de usuarios y si es asi, 
+% obtiene los datos de este.
 obtenerDatosUser([UserActual|_], User, DatosUser):-
 	getUserName(UserActual, Username),
 	(User == Username),
 	DatosUser = UserActual.
-
 obtenerDatosUser([_|RestoUsers], User, DatosUser):-
 	obtenerDatosUser(RestoUsers, User, DatosUser).
 
+% Dominio: Un user y un string
+% Descripcion: Predicado que transforma todos los datos de un User a un solo string
 userToString(User, StrOut):-
 	getUserName(User, Name),
 	getUserDate(User, Date),
@@ -196,6 +212,7 @@ userToString(User, StrOut):-
 	string_concat(S3, "\nFecha de registro: ", S4),
 	string_concat(S4, DateString, S5),
 	string_concat(S5, "\n----------\n", StrOut).
+
 /*__________________________________________________________________________________________________
   _____   ____       _        _   _   _         _                    _           _ 
  |_   _| |  _ \     / \      | | | | (_)  ___  | |_    ___    _ __  (_)   __ _  | |
@@ -205,15 +222,22 @@ userToString(User, StrOut):-
 ____________________________________________________________________________________________________*/
                                                                                  
 % Dominio: 
-% Date: Date (Lista de 3 integers)
-% Contenido: String
+% Historial: Historial
+% Date: Fecha (Lista de 3 integers)
+% Contenido, StrOut, SearchText: String
 % IDVer: Integer
+% ContentList: List
 
 % Predicados:
-% historial(Date, Contenido, IDVer, [Date, Contenido, IDVer])
-% getDateHistorial([Date,_,_], Date)
-% getTextoHistorial([_,Texto,_], Texto)
-% getIDHistorial([_,_,ID], ID)
+% historial(Date, Contenido, IDVer, [Date, Contenido, IDVer]) (aridad = 3)
+% getDateHistorial(Historial, Date) (aridad = 2)
+% getTextoHistorial(Historial, Contenido) (aridad = 2)
+% getIDHistorial(Historial, IDVer) (aridad = 2)
+% historialToString(Historial, StrOut) (aridad = 2)
+% searchInHistorial(ContentList, SearchText) (aridad = 2)
+
+% Metas primarias: historial, historialToString, searchInHistorial
+% Metas secundarias: getDateHistorial, getTextoHistorial, getIDHistorial
 
 % ---------------------------------------REPRESENTACION-----------------------------------------------
 
@@ -251,32 +275,35 @@ getDateHistorial([Date,_,_], Date):-
 
 % Dominio: Una version de historial y un texto (string)
 % Descripcion: Predicado que obtiene el texto de una version de historial
-getTextoHistorial([_,Texto,_], Texto):-
-	string(Texto).
+getTextoHistorial([_,Contenido,_], Contenido):-
+	string(Contenido).
 
 % Dominio: Una version de historial y un ID (integer)
 % Descripcion: Predicado que obtiene el ID de una version de historial.
-getIDHistorial([_,_,ID], ID):-
-	integer(ID).
+getIDHistorial([_,_,IDVer], IDVer):-
+	integer(IDVer).
 
 % -------------------------------------OTROS PREDICADOS-----------------------------------------------
 
-historialToString(Historial, StrOutH):-
-	getDateHistorial(Historial, DateH),
-	getTextoHistorial(Historial, TextoH),
-	getIDHistorial(Historial,IDH),
-	string_concat("Version Numero ", IDH, S1),
+% Dominio: Una version de Historial y un string
+% Descripcion: Predicado que transforma el contenido de una version de historial en un string
+historialToString(Historial, StrOut):-
+	getDateHistorial(Historial, Date),
+	getTextoHistorial(Historial, Contenido),
+	getIDHistorial(Historial,IDVer),
+	string_concat("Version Numero ", IDVer, S1),
 	string_concat(S1, ": * ", S2),
-	string_concat(S2, TextoH, S3),
+	string_concat(S2, Contenido, S3),
 	string_concat(S3, " * ", S4),
 	string_concat(S4, "version guardada en la fecha: ", S5),
-	fecha_to_string(DateH, DateString),
+	fecha_to_string(Date, DateString),
 	string_concat(S5, DateString, S6),
-	string_concat(S6, '\n', StrOutH).
+	string_concat(S6, '\n', StrOut).
 
+% Dominio: Una lista de contenidos de versiones de historial y un texto (string)
+% Descripcion: Predicado que verifica si un texto se encuentra en alguna de las versiones de historial
 searchInHistorial([PrimerContenido|_], SearchText):-
 	sub_string(PrimerContenido, _, _, _, SearchText).
-
 searchInHistorial([_|RestoContenido], SearchText):-
 	searchInHistorial(RestoContenido, SearchText).
 
@@ -288,27 +315,68 @@ searchInHistorial([_|RestoContenido], SearchText):-
    |_|   |____/  /_/   \_\   |____/   \___/   \___|  \__,_| |_| |_| |_|  \___| |_| |_|  \__|  \___/ 
 _________________________________________________________________________________________________________*/                                                                                                   
 % Dominio:
-% Autor: String
-% Date: Date
-% Nombre: String
-% Contenido: String
-% IDDoc: Intgeger
-% Permisos: List
-% HistorialList: List
+% Autor, Nombre, Contenido, Permiso, SearchText, StrOut,Text1, Text2, TextFinal, StrTemp, StrDocument,
+% Username, User: String
+% Date: Fecha
+% IDDoc, : Intgeger
+% Permisos, HistorialList, ListElementos, ListPermisos, Permiso, ListTemp, ListUsername, ListUsers, 
+% ListDocuments, ListFinal, ListPermisosPre, Accceses, ListDocumentos, ListIDs, ListGuardado, 
+% DocumentsFinal, DocsTextFound, DocsHistTextFound, AccesesFinal DocsFinal,: List
+% Retorno: Documento
+% Cabeza, Elemento: Cualquier tipo
+% UserActivo: User
 
 % Predicados:
-% documento(Autor, Date, Nombre, Contenido, IDDoc, DocFinal)
-% getAutorDocumento([Autor,_,_,_,_,_,_],Autor)
-% getDateDocumento([_,Date,_,_,_,_,_], Date)
-% getNameDocumento([_,_,Nombre,_,_,_,_],Nombre)
-% getContenidoDocumento([_,_,_,Contenido,_,_,_],Contenido)
-% getPermisosDocumento([_,_,_,_,Permisos,_,_],Permisos)
-% getHistorialDocumento([_,_,_,_,_,HistorialList,_],HistorialList)
-% getIDDocumento([_,_,_,_,_,_,IDDoc],IDDoc)
-% encontrarPorIDDocumento([H|_],ID,Retorno)
-% encontrarPorIDDocumento([_|T],ID,Retorno)
-% primerElemento([Cabeza|_], Cabeza)
-% restoElementos([_,Resto],Resto)
+% documento(Autor, Date, Nombre, Contenido, IDDoc, DocFinal) (aridad = 6)
+% getAutorDocumento(Documento,Autor) (aridad = 2)
+% getDateDocumento(Documento, Date) (aridad = 2)
+% getNameDocumento(Documento,Nombre) (aridad = 2)
+% getContenidoDocumento(Documento,Contenido) (aridad = 2)
+% getPermisosDocumento(Documento, Permisos) (aridad = 2)
+% getHistorialDocumento(Documento,HistorialList) (aridad = 2)
+% getIDDocumento(Documento,IDDoc) (aridad = 2)
+% encontrarPorIDDocumento(Documento,IDoc,Retorno) (aridad = 3)
+% primerElemento(ListElementos, Cabeza) (aridad = 2)
+% permisoValido(Permiso) (aridad = 1)
+% buscarPermiso(Permisos,User,ListPermisos) (aridad = 3)
+% verificarCompartir(Permisos) (aridad = 1)
+% puedeCompartir(ListPermiso,UserActivo) (aridad = 2)
+% verificarEditar(ListPermiso) (aridad = 1)
+% puedeEditar(ListPermiso,UserActivo) (aridad = 2)
+% verificarPermisosValidos(ListPermiso) (aridad = 1)
+% obtenerListaAccesos(ListaPermisos,ListUsernames, ListaPermisosPre, ListaResultante) (aridad = 4)
+% tienePoder(ListPermisos, User, ListaTemp, ListaResultante) (aridad = 4)
+% tienenPermisos(ListaPermisos,ListUsers, ListGuardado, ListResultado) (aridad = 4)
+% borrarPrimeraOcurrenciaPermiso(Elemento, ListPermisos, Resultado ) (aridad = 4)
+% borrarRepetidos(Accesses, ListUsernames, AccessesFinal) (aridad = 3)
+% borrarDocDuplicado(Documento, ListDocumentos, ListResultado) (aridad = 3)
+% encontrarPorIDHistorial(ListHistorial, IDVersion, Retorno) (aridad = 3)
+% elementoPermisoString(Elemento,StrOut) (aridad = 2)
+% permisosToString(ListPermisos, StrTemp, StrOutP) (aridad = 3)
+% fullAccessesToString(ListPermisos, StrTemp, StrOut)  (aridad = 3)
+% documentoToString(Documento, StrDocument) (aridad = 2)
+% puedeAcceder(ListPermisos,User) (aridad = 2)
+% obtenerDocsAcceso(ListDocumentos, User, ListTemp, ListFinal) (aridad = 4)
+% searchInDocuments(ListDocumentos, SearchText, TempList, DocsTextFound) (aridad = 4)
+% searchInDocsHist(LiatDocumentos, SearchText, TempList, DocsHistTextFound) (aridad = 4)
+% unirBusquedas(DocsTextFound, ListDocumentos, DocsFinal) (aridad =  3)
+% reemplazarPalabras(TextoOriginal, Text1, Text2, ListTemp, TextFinal) (aridad = 5)
+% eliminarTodosLosPermisos(Document, NewDocument) (aridad = 2)
+% obtenerDocumentosPropios(ListIDs, Documents, UserActivo, TempList, ListFinal) (aridad = 5)
+% eliminarDocsDuplicados(ListDocuments, Documents, DocumentsFinal) (aridad = 3)
+% agregarNuevosDocs(ListDocuments, Documents,  DocumentsFinal) (aridad = 3)
+% obtenerDocumentosPorAutor(ListDocuments, User, TempList, ListFinal) (aridad = 4)
+
+% Metas primarias: documento, puedeCompartir, puedeEditar, verificarPermisosValidos, obtenerListaAccesos
+% tienen permisos, borrar repetidos, encontrarPorIDHistorial, documentoToString, obtenerDocsAcceso, 
+% searchInDocuments, searchInDocsHist, unirBusquedas, reemplazarPalabras, eliminarTodosLosPermisos, 
+% obtenerDocumentosPropios, eliminarDocsDuplicados, agregarNuevosDocs, obtenerDocumentosPorAutor.
+
+% Metas secundarias: getAutorDocumento, getDateDocumento, getNameDocumento, getContenidoDocumento,
+% getPermisosDocumento, getHistorialDocumento, getIDDocumento, encontrarPorIDDocumento, primerElemento,
+% permisoValido, buscarPermiso, verificarCompartir, verificarEditar, tienePoder,
+% borrarPrimeraOcurrenciaPermiso, borrarDocDuplicado, elementoPermisoString, permisosToString,
+% fullAccessesToString, puedeAcceder,
 
 % -------------------------------------REPRESENTACION--------------------------------------------------
 
@@ -331,8 +399,8 @@ documento(Autor,Date,Nombre,Contenido, IDDoc, DocFinal):-
 	getMesFecha(Date,MM),
 	getAnioFecha(Date,AAAA),
 	date(DD,MM,AAAA,Date),!,
-	historial(Date,Contenido,0, Hist1),
-	DocFinal = [Autor,Date,Nombre,Contenido,[[Autor, "R", "W", "C", "S"]],[Hist1],IDDoc].
+	historial(Date,Contenido,0, HistorialList),
+	DocFinal = [Autor,Date,Nombre,Contenido,[[Autor, "R", "W", "C", "S"]],[HistorialList],IDDoc].
 
 % ---------------------------------------SELECTORES----------------------------------------------------
 
@@ -380,20 +448,17 @@ getIDDocumento([_,_,_,_,_,_,IDDoc],IDDoc):-
 
 % Dominio: Una lista de Documentos, un ID (integer) y un TDA Documento
 % Descripcion: Predicado que encuentra a un Documento en una lista de Documentos a traves de su ID
-encontrarPorIDDocumento([H|_],ID,Retorno):-
-    getIDDocumento(H,ID2),
-    (ID2 = ID),
-    H = Retorno.
-encontrarPorIDDocumento([_|T],ID,Retorno):-
-    encontrarPorIDDocumento(T,ID,Retorno).
+encontrarPorIDDocumento([PrimerDocumento|_],IDoc,Retorno):-
+    getIDDocumento(PrimerDocumento,IDoc2),
+    (IDoc2 == IDoc),
+    PrimerDocumento = Retorno.
+encontrarPorIDDocumento([_|RestoDocumentos],IDoc,Retorno):-
+    encontrarPorIDDocumento(RestoDocumentos,IDoc,Retorno).
 
+% HECHO (El unico entre muchas reglas)
 % Dominio: Una lista y un elemento (puede ser de cualquier tipo)
 % Descripcion: Predicado que obtiene el primer elemento de una lista
 primerElemento([Cabeza|_], Cabeza).
-
-% Dominio: Una lista y otra lista (la misma pero sin el primer elemento)
-% Descripcion: Predicado que obtiene a la lista ingresada por entrada sin el primer elemento de esta
-restoElementos([_,Resto],Resto).
 
 % Dominio: Un string
 % Descripcion: Predicado que retorna True si un permiso es valido (Si es "R", "W", "S" o "C")
@@ -415,10 +480,10 @@ buscarPermiso([_|RestoPermisos],User,ListPermisos):-
 
 % Dominio: Una lista que contiene un username y permisos (strings)
 % Descripcion: Predicado que verifica si en la lista de permisos se encuentra el permiso de compartir ("S")
-verificarCompartir([Cabeza|_]):-
-	Cabeza = "S".
-verificarCompartir([_|Resto]):-
-	verificarCompartir(Resto).
+verificarCompartir([PrimerPermiso|_]):-
+	PrimerPermiso = "S".
+verificarCompartir([_|RestoPermisos]):-
+	verificarCompartir(RestoPermisos).
 
 % Dominio: Una lista de sublistas de permisos y un User
 % Descripcion: Predicado que recorre toda la lista de sublistas de permisos para verificar si un User tiene
@@ -429,24 +494,24 @@ puedeCompartir(ListPermiso,UserActivo) :-
 
 % Dominio: Una lista que contiene un username y permisos (strings)
 % Descripcion: Predicado que verifica si en la lista de permisos se encuentra el permiso de escritura ("W")
-verificarEditar([Cabeza|_]):-
-	Cabeza = "W".
-verificarEditar([_|Resto]):-
-	verificarEditar(Resto).
+verificarEditar([PrimerPermiso|_]):-
+	PrimerPermiso = "W".
+verificarEditar([_|RestoPermisos]):-
+	verificarEditar(RestoPermisos).
 
 % Dominio: Una lista de sublistas de permisos y un User
 % Descripcion: Predicado que recorre toda la lista de sublistas de permisos para verificar si un User tiene
 % el permiso de compartir ("W")
-puedeEditar(ListPermiso,UserActivo) :-
+puedeEditar(ListPermiso,UserActivo):-
 	buscarPermiso(ListPermiso, UserActivo, PermisosUser),
 	verificarEditar(PermisosUser), !.
 
 % Dominio: Una lista de solo permisos (strings)
 % Descripcion: Predicado que verifica si una lista de solo permisos tiene solo permisos validos
 verificarPermisosValidos([]).
-verificarPermisosValidos([H|T]):-
-	permisoValido(H),
-	verificarPermisosValidos(T).
+verificarPermisosValidos([PrimerPermiso|RestoPermisos]):-
+	permisoValido(PrimerPermiso),
+	verificarPermisosValidos(RestoPermisos).
 
 % Dominio: Una lista de permisos, una lista de usernames, una lista de permisos de un documento y una lista
 % total de permisos, sin filtrar (pueden haber reptidos)
@@ -464,98 +529,100 @@ obtenerListaAccesos(ListaPermisos,[PrimerUserN|RestoUserN], ListaPermisosPre, Li
 % Descripcion: Verifica si un User de la lista de usernames permitidos ya tiene permisos en un Documento
 tienePoder([],_,ListaTemp,ListaResultante):-
 	(ListaTemp = ListaResultante).
-tienePoder([H|_], User, ListaTemp, ListaResultante):-
-	primerElemento(H, Nombre),
+tienePoder([PrimeraListaPermisos|_], User, ListaTemp, ListaResultante):-
+	primerElemento(PrimeraListaPermisos, Nombre),
 	(User == Nombre),
 	append([User], ListaTemp, ListaResultante).
-tienePoder([_|T], User, ListaTemp, ListaResultante):-
-	tienePoder(T, User, ListaTemp, ListaResultante).
+tienePoder([_|RestoListaPermisos], User, ListaTemp, ListaResultante):-
+	tienePoder(RestoListaPermisos, User, ListaTemp, ListaResultante).
 
 % Dominio: Una lista de permisos y tres listas de users
 % Descripcion: Predicado que verifica cuales son los users que ya tienen permisos en un documento y si
 % estos corresponden a algunos de los users de la lista de usernames permitidos
 tienenPermisos(_,[],ListGuardado,ListResultado):-
 	(ListGuardado = ListResultado).
-tienenPermisos(ListaPermisos, [H|T], ListGuardado, ListResultado):-
-	tienePoder(ListaPermisos, H, ListGuardado, ListTemp),
-	tienenPermisos(ListaPermisos,T,ListTemp,ListResultado).
+tienenPermisos(ListaPermisos, [PrimerUser|RestoUsers], ListGuardado, ListResultado):-
+	tienePoder(ListaPermisos, PrimerUser, ListGuardado, ListTemp),
+	tienenPermisos(ListaPermisos,RestoUsers,ListTemp,ListResultado).
 
 % Dominio: Un username, una lista de permisos sin filtrar y una lista de permisos filtradas
 % Descripcion: Predicado que elimina una lista de permisos duplicadas de un usuario. El predicado siempre
 % elimina los permisos antiguos y deja los nuevos, o elimina los duplicados en caso de que los permisos sean
 % iguales a los que ya tenia.
-borrarPrimeraOcurrenciaPermiso( Elemento, [H|Resto], Resto ):-
-    primerElemento(H,Nombre),
+borrarPrimeraOcurrenciaPermiso(Elemento, [PrimeraListaPermisos|RestoListaPermisos], RestoListaPermisos ):-
+    primerElemento(PrimeraListaPermisos,Nombre),
     (Elemento == Nombre).
-borrarPrimeraOcurrenciaPermiso( Elemento, [Cabeza|Resto], [Cabeza|Resultado] ) :-
-	Elemento\=Cabeza,
-	borrarPrimeraOcurrenciaPermiso( Elemento, Resto, Resultado ).
+borrarPrimeraOcurrenciaPermiso( Elemento, [PrimeraListaPermisos|RestoListaPermisos], [PrimeraListaPermisos|Resultado] ) :-
+	Elemento\=PrimeraListaPermisos,
+	borrarPrimeraOcurrenciaPermiso( Elemento, RestoListaPermisos, Resultado ).
 
 % Dominio: Una lista de permisos sin filtrar, una lista de usernames y una lista de permisos filtradas
 % Descripcion: Predicado que filtra la lista de permisos de un documento, eliminando aquellos permisos
 % repetidos y evitando que un mismo user tenga mas de una lista de permisos
 borrarRepetidos(Accesses, [], AcccessesFinal):-
 	(Accesses = AcccessesFinal).
-borrarRepetidos(Accesses, [H|T], AccessesFinal):-
-	borrarPrimeraOcurrenciaPermiso(H, Accesses, AccessesTemp),
-	borrarRepetidos(AccessesTemp, T, AccessesFinal).
+borrarRepetidos(Accesses, [PrimerUserN|RestoUserN], AccessesFinal):-
+	borrarPrimeraOcurrenciaPermiso(PrimerUserN, Accesses, AccessesTemp),
+	borrarRepetidos(AccessesTemp, RestoUserN, AccessesFinal).
 
 % Dominio: Un documento, una lista de documentos y una lista de documentos filtrada
 % Descripcion: Predicado que elimina a un documento que va a ser reemplazado por una version actualizada
 % de este, evitando asi que hayan dos documentos con el mismo ID.
-borrarDocDuplicado( Documento, [H|Resto], Resto ):-
-    (Documento == H).
-borrarDocDuplicado( Documento, [Cabeza|Resto], [Cabeza|Resultado] ) :-
-	Documento\=Cabeza,
-	borrarDocDuplicado( Documento, Resto, Resultado ).
+borrarDocDuplicado( Documento, [PrimerDocumento|RestoDocumentos], RestoDocumentos):-
+    (Documento == PrimerDocumento).
+borrarDocDuplicado( Documento, [PrimerDocumento|RestoDocumentos], [PrimerDocumento|ListResultado]):-
+	Documento\=PrimerDocumento,
+	borrarDocDuplicado( Documento, RestoDocumentos, ListResultado).
 
 % Dominio: Un Historial de un documento, un ID (integer) y una version de un documento
 % Descripcion: Predicado que encuentra una version del historial de versiones de un documento, a traves
 % de su ID.
-encontrarPorIDHistorial([H|_],IDVersion,Retorno):-
-    getIDHistorial(H,ID2),
-    (ID2 = IDVersion),
-    H = Retorno.
-encontrarPorIDHistorial([_|T],ID,Retorno):-
-    encontrarPorIDHistorial(T,ID,Retorno).
+encontrarPorIDHistorial([PrimeraVersion|_],IDVersion,Retorno):-
+    getIDHistorial(PrimeraVersion,ID2),
+    (ID2 == IDVersion),
+    PrimeraVersion = Retorno.
+encontrarPorIDHistorial([_|RestoVersiones],IDVersion,Retorno):-
+    encontrarPorIDHistorial(RestoVersiones,IDVersion,Retorno).
 
-
+% Dominio: Dos strings
+% Descripcion: Predicado que retorna un mensaje que varia dependiendo del primer elemento
 elementoPermisoString(ElementoC,StrOutEP):-
 	(ElementoC == "C"),
 	(StrOutEP = " tiene permisos de comentarios -").
-
 elementoPermisoString(ElementoS,StrOutEP):-
 	(ElementoS == "S"),
 	(StrOutEP = "  tiene permisos de compartir -").
-
 elementoPermisoString(ElementoW,StrOutEP):-
 	(ElementoW == "W"),
 	(StrOutEP = " tiene permisos de escritura -").
-
 elementoPermisoString(ElementoR,StrOutEP):-
 	(ElementoR == "R"),
 	(StrOutEP = " tiene permisos de lectura -").
-
 elementoPermisoString(Elemento,StrOutEP):-
 	string_concat(Elemento, ":", StrOutEp1),
 	(StrOutEP = StrOutEp1).
 
+% Dominio: Una Lista de permisos de un documento, y dos strings
+% Descripcion Predicado que transforma toda una lista de permisos a string
 permisosToString([], StrTemp, StrOut):-
 	(StrTemp = StrOut).
-
-permisosToString([H|T], StrTemp, StrOutP):-
-	elementoPermisoString(H, Str1),
+permisosToString([PrimerElemento|RestoElementos], StrTemp, StrOutP):-
+	elementoPermisoString(PrimerElemento, Str1),
 	string_concat(StrTemp, Str1, Str2),
-	permisosToString(T, Str2, StrOutP).
+	permisosToString(RestoElementos, Str2, StrOutP).
 
+% Dominio: Una lista de permisos y dos strings
+% Descripcion: Predicado que transforma todo una lista de sublistas de permisos a string
 fullAccessesToString([], StrTemp, StrOut):-
 	(StrTemp = StrOut).
-fullAccessesToString([FirstList|RestoList], StrTemp, StrOut):-
-	permisosToString(FirstList, "", StrOnePermiso),
+fullAccessesToString([PrimeraListaPermisos|RestoListaPermisos], StrTemp, StrOut):-
+	permisosToString(PrimeraListaPermisos, "", StrOnePermiso),
 	string_concat(StrTemp, StrOnePermiso, StrTemp2),
 	string_concat(StrTemp2, '\n', StrTemp3),
-	fullAccessesToString(RestoList, StrTemp3, StrOut).
+	fullAccessesToString(RestoListaPermisos, StrTemp3, StrOut).
 
+% Dominio: Un documento y un string
+% Descripcion: Predicado que transforma TODO lo que corresponde a un Documento a string
 documentoToString(Documento, StrDocument):-
 	string_concat("----------",'\n', S1),
 	string_concat(S1, "ID de Documento: ", S2),
@@ -586,16 +653,17 @@ documentoToString(Documento, StrDocument):-
 	string_concat(S16, HistorialStringFull, S17),
 	string_concat(S17, "----------\n", StrDocument).
 
-
-
+% Dominio: Una lista de permisos y un string
+% Descripcion: Predicado que permite saber si un username tiene algun permiso
 puedeAcceder([PrimeraListaPermisos|_],User):-
 	primerElemento(PrimeraListaPermisos, FirstName),
 	(User == FirstName).
-
 puedeAcceder([_|RestoListaPermisos], User):-
 	puedeAcceder(RestoListaPermisos, User).
 
-
+% Dominio: Una lista de documentos, un username, y dos listas
+% Descripcion: Predicado que permite obtener todos los documentos donde un user en especifico
+% tenga algun permiso (independiente de que permiso sea).
 obtenerDocsAcceso([], _, ListTemp, ListFinal):-
 	(ListFinal = ListTemp).
 obtenerDocsAcceso([FirstDocument|RestoDocuments], User, ListTemp, ListFinal):-
@@ -603,57 +671,62 @@ obtenerDocsAcceso([FirstDocument|RestoDocuments], User, ListTemp, ListFinal):-
 	puedeAcceder(Permisos, User),
 	append(ListTemp, [FirstDocument], ListaTemp2),
 	obtenerDocsAcceso(RestoDocuments, User, ListaTemp2, ListFinal).
-
 obtenerDocsAcceso([_|RestoDocuments], User, ListTemp, ListFinal):-
 	obtenerDocsAcceso(RestoDocuments, User, ListTemp, ListFinal).
 
+% Dominio: Una lista de textos, dos strings y una lista
+% Descripcion: Predicado que verifica si un texto en especifico se encuentra en un texto
+% de un documento y si es asi, agrega el contenido a una lista. Obtiene todas los textos
+% donde coincida la busqueda.
 searchInDocuments([],_, TempList, DocsTextFound):-
 	TempList = DocsTextFound, !.
-
 searchInDocuments([PrimerContenido| RestoContenido], SearchText, TempList, DocsTextFound):-
 	sub_string(PrimerContenido, _, _, _, SearchText),
 	append(TempList, [PrimerContenido], NewTempList),
 	searchInDocuments(RestoContenido, SearchText, NewTempList, DocsTextFound).
-
 searchInDocuments([_|RestoContenido], SearchText, TempList, DocsTextFound):-
 	searchInDocuments(RestoContenido, SearchText, TempList, DocsTextFound).
 
-
+% Dominio: Una lista de documentos, un string y dos listas
+% Descripcion: Predicado que obtiene todos los documentos donde los historiales, en alguna
+% de sus versiones contengan un texto en especifico.
 searchInDocsHist([], _, TempList, DocsHistTextFound):-
 	TempList = DocsHistTextFound, !.
-
-
 searchInDocsHist([PrimerDocumento|RestoDocumentos], SearchText, TempList, DocsHistTextFound):-
 	getHistorialDocumento(PrimerDocumento, HistList),
 	maplist(getTextoHistorial, HistList, TextHist),
 	searchInHistorial(TextHist, SearchText),
 	append(TempList, [PrimerDocumento], NewTempList),
 	searchInDocsHist(RestoDocumentos, SearchText, NewTempList, DocsHistTextFound).
-
 searchInDocsHist([_|RestoDocumentos], SearchText, TempList, DocsHistTextFound):-
 	searchInDocsHist(RestoDocumentos, SearchText, TempList, DocsHistTextFound).
 
+% Dominio: Tres listas de documentos
+% Descripcion: Predicado que une las listas de documentos donde se encontro los textos
+% buscados
 unirBusquedas(DocsTextFound, [],DocsFinal):-
 	DocsTextFound = DocsFinal, !.
-
 unirBusquedas(DocsTextFound, [PrimerDocumento| RestoDocumentos], DocsFinal):-
 	not(member(PrimerDocumento, DocsTextFound)),
 	append(DocsTextFound, [PrimerDocumento], NewDocsList),
 	unirBusquedas(NewDocsList, RestoDocumentos, DocsFinal).
-	
-
 unirBusquedas(DocsTextFound, [_|RestoDocumentos], DocsFinal):-
 	unirBusquedas(DocsTextFound, RestoDocumentos, DocsFinal).
 
+% Dominio: Cuatro strings y una lista 
+% Descripcion: Predicado que reemplazando todas las coincidencias de una palabra por otra. Para ello,
+% guarda en una lista la palabra cada vez que se le cambia algo, para asi verificar si aun quedan
+% caracteres por cambiar
 reemplazarPalabras(TextoOriginal, Text1, Text2, ListTemp, TextFinal):-
 	not(member(TextoOriginal, ListTemp)),
 	append(ListTemp, [TextoOriginal], NewListTemp),
 	re_replace(Text1, Text2, TextoOriginal, NewTextoOriginal),
 	reemplazarPalabras(NewTextoOriginal, Text1, Text2, NewListTemp, TextFinal), !.
-
 reemplazarPalabras(TextoOriginal, _,_,_,TextFinal):-
 	TextoOriginal = TextFinal, !.
 
+% Dominio: Dos documentos, el primero puede tener permisos de otros usuarios
+% Descripcion: Predicado que elimina todos los permisos (excepto los del Autor) de un documento.
 eliminarTodosLosPermisos(Document, NewDocument):-
 	getAutorDocumento(Document, AutorDoc),
 	getDateDocumento(Document, DateDoc),
@@ -663,39 +736,42 @@ eliminarTodosLosPermisos(Document, NewDocument):-
 	getIDDocumento(Document, IDDoc),
 	NewDocument = [AutorDoc, DateDoc, NameDoc, TextDoc, [[AutorDoc, "R", "W", "C", "S"]], HistorialDoc, IDDoc].
 
-
+% Dominio: Una lista de IDs, una lista de documentos, un unstring y dos lista de documentos
+% Descripcion: Predicado que obtiene todos los documentos propios de un autor en especifico de
+% acuerdo a una lista de IDs.
 obtenerDocumentosPropios([], _,_,TempList, ListFinal):-
 	TempList = ListFinal.
-
 obtenerDocumentosPropios([PrimerID|RestoIDs], Documents, UserActivo, TempList, ListFinal):-
 	encontrarPorIDDocumento(Documents, PrimerID, DocumentEncontrado),
 	getAutorDocumento(DocumentEncontrado, AutorDoc),
 	AutorDoc == UserActivo,
 	append(TempList, [DocumentEncontrado], NewTempList),
 	obtenerDocumentosPropios(RestoIDs, Documents, UserActivo, NewTempList, ListFinal).
-
 obtenerDocumentosPropios([_|RestoIDs], Documents, UserActivo, TempList, ListFinal):-
 	obtenerDocumentosPropios(RestoIDs, Documents, UserActivo, TempList, ListFinal).
 
-
+% Dominio: Tres listas de documentos
+% Descripcion: Predicado que elimina ciertos documentos de otra lista de documentos
 eliminarDocsDuplicados([], Documents,  DocumentsFinal):-
 	Documents = DocumentsFinal.
 eliminarDocsDuplicados([PrimerDocumento|RestoDocumentos], Documents,  DocumentsFinal):-
 	borrarDocDuplicado(PrimerDocumento, Documents, NewDocuments),
 	eliminarDocsDuplicados(RestoDocumentos, NewDocuments, DocumentsFinal).
-
 eliminarDocsDuplicados([_|RestoDocumentos], Documents,  DocumentsFinal):-
 	eliminarDocsDuplicados(RestoDocumentos, Documents,  DocumentsFinal).
 
+% Dominio: Tres listas de documento
+% Descripcion: Predicado que agrega ciertos documentos a otra lista de documentos
 agregarNuevosDocs([], Documents,  DocumentsFinal):-
 	Documents = DocumentsFinal.
 agregarNuevosDocs([PrimerDocumento|RestoDocumentos], Documents,  DocumentsFinal):-
 	append(Documents, [PrimerDocumento], NewDocuments),
 	agregarNuevosDocs(RestoDocumentos, NewDocuments, DocumentsFinal).
-
 agregarNuevosDocs([_|RestoDocumentos], Documents,  DocumentsFinal):-
 	agregarNuevosDocs(RestoDocumentos, Documents,  DocumentsFinal).
 
+% Dominio: Una lista de documentos, un username y dos listas
+% Descripcion: Predicado que obtiene todos los documentos de un Autor en especifico.
 obtenerDocumentosPorAutor([], _, TempList, ListFinal):-
 	TempList = ListFinal.
 obtenerDocumentosPorAutor([PrimerDocumento|RestoDocumentos], User, TempList, ListFinal):-
@@ -703,9 +779,9 @@ obtenerDocumentosPorAutor([PrimerDocumento|RestoDocumentos], User, TempList, Lis
 	AutorDoc == User,
 	append(TempList, [PrimerDocumento], NewTempList),
 	obtenerDocumentosPorAutor(RestoDocumentos, User, NewTempList, ListFinal).
-
 obtenerDocumentosPorAutor([_|RestoDocumentos], User, TempList, ListFinal):-
 	obtenerDocumentosPorAutor(RestoDocumentos, User, TempList, ListFinal).
+
 /*____________________________________________________________________________________________________________
  _____  ____      _     ____                          _  _                            ____                       
 |_   _||  _ \    / \   |  _ \   __ _  _ __   __ _   __| |(_)  __ _  _ __ ___    __ _  |  _ \   ___    ___  ___ 
@@ -713,6 +789,29 @@ obtenerDocumentosPorAutor([_|RestoDocumentos], User, TempList, ListFinal):-
   | |  | |_| | / ___ \ |  __/ | (_| || |   | (_| || (_| || || (_| || | | | | || (_| | | |_| || (_) || (__ \__ \
   |_|  |____/ /_/   \_\|_|     \__,_||_|    \__,_| \__,_||_| \__, ||_| |_| |_| \__,_| |____/  \___/  \___||___
 ______________________________________________________________________________________________________________*/
+% Dominio:
+% Nombre: String
+% Date: Fecha
+% Registrados, Activos, Documents, ListRegistrados, ListActivo, ListDocumentos: List
+% UserActivo: User
+
+% Predicados:
+% paradigmaDocs(Nombre,Date,ParadigmaDocs) (aridad = 3)
+% getNombrePdocs(ParadigmaDocs,Nombre) (ardiad = 2)
+% getDatePdocs(ParadigmaDocs, Date) (aridad = 2)
+% getRegistradosPdocs(ParadigmaDocs,Registrados) (aridad = 2)
+% getActivosPdocs(ParadigmaDocs, Activos) (aridad = 2)
+% getUserActivo(Activos, UserActivo) (aridad = 2)
+% getDocumentosPdocs(ParadigmaDocs, Documents) (aridad = 2)
+% paradigmadocsActualizado(Nombre,Fecha,ListRegistrados,ListActivo,ListDocumentos,PDOUT) (aridad = 6)
+% getDiaFecha(Date,DD) (aridad = 2)
+% getMesFecha(Date,MM) (aridad = 2)
+% getAnioFecha(Date,AAAA) (aridad = 2)
+
+% Metas primarias: paradigmaDocs, getNombrePdocs, getDatePdocs, getRegistradosPdocs, getUserActivo,
+% getActivosPdocs, getDocumentosPdocs, paradigmaDocsActualizado, 
+% Metas secundarias: getDiaFecha, getMesFecha, getAnioFecha
+
 % -------------------------------------------REPRESENTACION--------------------------------------------------
 
 % El TDA Paradigmadocs se representa a traves de una lista  (string X fecha X list X list X list) la cual 
@@ -762,21 +861,21 @@ getActivosPdocs([_,_,_,Activos,_], Activos):-
 
 % Dominio: Una lista de user activo proveniente de paradigmaDocs
 % Descripcion: Predicado que obtiene al user activo, si es que hay uno.
-getUserActivo([UserAct], UserAct):-
-	string(UserAct).
+getUserActivo([UserActivo], UserActivo):-
+	string(UserActivo).
 
 % Dominio: Un paradigmaDocs y una lista de documentos
 % Descripcion: Predicado que obtiene la lista de documentos de una plataforma de tipo ParadigmaDocs
-getDocumentosPdocs([_,_,_,_,Docs], Docs):-
-	is_list(Docs).
+getDocumentosPdocs([_,_,_,_,Documents], Documents):-
+	is_list(Documents).
 
 % ---------------------------------------------MODIFICADORES---------------------------------------
 
 % Dominio: Un string, una date, tres listas, un integer y un TDA ParadigmaDocs
 % Descripcion: Predicado que crea un TDA ParadigmaDocs actualizado, donde cualquier parte de este puede
 % haber sido modificado
-paradigmadocsActualizado(Nombre,Fecha,ListRegistrados,ListActivo,ListDocumento,PDOUT):-
-	PDOUT = [Nombre, Fecha, ListRegistrados,ListActivo,ListDocumento].
+paradigmadocsActualizado(Nombre,Fecha,ListRegistrados,ListActivo,ListDocumentos,PDOUT):-
+	PDOUT = [Nombre, Fecha, ListRegistrados,ListActivo,ListDocumentos].
 
 /*____________________________________________________________________________________________________
   ____    ____    _____   ____    ___    ____      _      ____     ___    ____  
@@ -961,8 +1060,12 @@ paradigmaDocsRestoreVersion(Sn1, DocumentId, IdVersion, Sn2):-
 
 % --------------------------------PREDICADO PARADIGMADOCSTOSTRING--------------------------------------
 
-% Dominio:
-% Descripcion:
+% Dominio: Un paradimaDocs que puede contener o no a un User activo y un string
+% Descripcion: Predicado que transforma todo el contenido de el paradigmaDocs ingresado a un string.
+% Si se tiene a un user logueado, entonces el string contiene toda la informacion pertenenciente al 
+% user logueado junto con los documentos que puede acceder y la informacion de estos. Si no se tiene
+% a un user logueado, entonces el string contiene toda la informacion de la plataforma paradigmaDocs.
+% Para visualizar correctamente el string, se debe usar "write()".
 paradigmaDocsToString(Sn1, StrOut):-
 	getActivosPdocs(Sn1, Activo),
 	length(Activo, 0),
@@ -982,8 +1085,6 @@ paradigmaDocsToString(Sn1, StrOut):-
 	maplist(documentoToString, Documents, ListDocsString),
 	atomics_to_string(ListDocsString, RealDocsStrings),
 	string_concat(S6, RealDocsStrings, StrOut), !.
-
-
 paradigmaDocsToString(Sn1, StrOutUL):-
 	getActivosPdocs(Sn1,Activo),
 	length(Activo,1),
@@ -1006,6 +1107,12 @@ paradigmaDocsToString(Sn1, StrOutUL):-
 
 % --------------------------------PREDICADO PARADIGMADOCSREVOKEALACCESSES----------------------------
 
+% Dominio: Un paradigmaDocs, una lista de IDs y un paradigmaDocs actualizado
+% Recorrido: Predicado que a traves de una lista de IDs, encuentra ciertos documentos y si el autor
+% de los documentos corresponde al autor, entonces se eliminan todos los permisos de estos documentos
+% ( a excepción de los permisos del autor). Si se intenta eliminar permisos de un documento que no 
+% existe o que no es del user logueado, entonces se retorna False. Si la lista de IDs no contiene 
+% elementos (es decir, esta vacia), entonces se eliminan los permisos de todos los documentos del user.
 paradigmaDocsRevokeAllAccesses(Sn1,DocumentIds, Sn2):-
 	getActivosPdocs(Sn1,Activo),
 	length(Activo,1),
@@ -1020,7 +1127,6 @@ paradigmaDocsRevokeAllAccesses(Sn1,DocumentIds, Sn2):-
 	getDatePdocs(Sn1, DatePdocs),
 	getRegistradosPdocs(Sn1, Users),
 	paradigmadocsActualizado(NamePdocs, DatePdocs, Users, [], NewDocuments2, Sn2).
-
 paradigmaDocsRevokeAllAccesses(Sn1,DocumentIds, Sn2Altern):-
 	getActivosPdocs(Sn1,Activo),
 	length(Activo,1),
@@ -1036,7 +1142,35 @@ paradigmaDocsRevokeAllAccesses(Sn1,DocumentIds, Sn2Altern):-
 	getRegistradosPdocs(Sn1, Users),
 	paradigmadocsActualizado(NamePdocs, DatePdocs, Users, [], NewDocuments2, Sn2Altern).
 
+% --------------------------------PREDICADO PARADIGMADOCSSEARCH--------------------------------------
+
+% Dominio: Un paradigmaDocs, un string y una lista de documentos
+% Descripcion: Predicado que permite a un usuario hacer busquedas en uno o varios documentos. Esto 
+% dependera si el usuario tiene documentos propios o que se le han compartido. Si tiene permisos
+% de escritura o lectura, entonces si puede hacer busquedas. Si la busqueda coincide, entonces se
+% agrega el documento a la lista de retorno. Caso contrario o si no hay un User logueado, se retorna
+% false.
+paradigmaDocsSearch(Sn1, SearchText,  Documents):-
+	getActivosPdocs(Sn1,Activo),
+	length(Activo,1),
+	getUserActivo(Activo, UserActivo),
+	getDocumentosPdocs(Sn1, DocumentsPdocs),
+	obtenerDocsAcceso(DocumentsPdocs, UserActivo, [], AllDocsUser),
+	maplist(getContenidoDocumento, AllDocsUser, ContentDocuments),
+	searchInDocuments(ContentDocuments, SearchText, [], DocsTextFound),
+	searchInDocsHist(AllDocsUser, SearchText, [], DocsHistTextFound),
+	unirBusquedas(DocsTextFound, DocsHistTextFound, DocsTextFinal),
+	DocsTextFinal = Documents, !.
+
+
 % --------------------------------PREDICADO PARADIGMADOCSDELETE--------------------------------------
+
+% Dominio: Un paradigmaDocs, un ID de documento, una fecha, un entero y un paradigmaDocs actualizado
+% Descripcion: Predicado que elimina texto de la version activa de un documento en especifico y crea 
+% una nueva version activa. La version antigua queda guardada en el historial. Si el numero de 
+% caracteres a eliminar es mayor al numero de caracteres de la version activa, entonces se elimina
+% todo el texto. Si no hay user logueado o se intenta eliminar contenido de un texto que no existe
+% entonces se retorna false.
 paradigmaDocsDelete(Sn1, DocumentId,  Date, NumberOfCharacters, Sn2):-
 	getActivosPdocs(Sn1,Activo),
 	length(Activo,1),
@@ -1063,7 +1197,6 @@ paradigmaDocsDelete(Sn1, DocumentId,  Date, NumberOfCharacters, Sn2):-
 	borrarDocDuplicado(DocEditar, Documents, NewDocuments),
 	append(NewDocuments, [NewDocumento], DocumentsFinal),
 	paradigmadocsActualizado(NamePdocs, DatePdocs, Users, [], DocumentsFinal, Sn2), !.
-
 paradigmaDocsDelete(Sn1, DocumentId,  Date, NumberOfCharacters, Sn2_):-
 	getActivosPdocs(Sn1,Activo),
 	length(Activo,1),
@@ -1091,22 +1224,15 @@ paradigmaDocsDelete(Sn1, DocumentId,  Date, NumberOfCharacters, Sn2_):-
 	append(NewDocuments, [NewDocumento], DocumentsFinal),
 	paradigmadocsActualizado(NamePdocs, DatePdocs, Users, [], DocumentsFinal, Sn2_), !.
 
-% --------------------------------PREDICADO PARADIGMADOCSSEARCH--------------------------------------
-paradigmaDocsSearch(Sn1, SearchText,  Sn2):-
-	getActivosPdocs(Sn1,Activo),
-	length(Activo,1),
-	getUserActivo(Activo, UserActivo),
-	getDocumentosPdocs(Sn1, Documents),
-	obtenerDocsAcceso(Documents, UserActivo, [], AllDocsUser),
-	maplist(getContenidoDocumento, AllDocsUser, ContentDocuments),
-	searchInDocuments(ContentDocuments, SearchText, [], DocsTextFound),
-	searchInDocsHist(AllDocsUser, SearchText, [], DocsHistTextFound),
-	unirBusquedas(DocsTextFound, DocsHistTextFound, DocsTextFinal),
-	DocsTextFinal = Sn2, !.
-
 % --------------------------------PREDICADO PARADIGMADOCSSEARCHANDREPLACE-----------------------------
 
-paradigmaDocsSearchAndReplace(Sn1, DocumentId, Text1, Text2, Sn2):-
+% Dominio: Un paradigmaDocs, un ID de documento (intgeer), dos strings y un paradigmaDocs actualizado
+% Descripcion: Predicado que permite realizar una busqueda de un texto en un documento en especifico y 
+% si se  encuentra, reemplazarlo por otro. Se reemplazan todas las coincidencias del texto y se retorna
+% el documento con el texto actualizado y una nueva version activa. La version activa queda guardada
+% en el historial. Si no se encuentra el documento o se usa sin tener a un User logueado, se retorna
+% false.
+paradigmaDocsSearchAndReplace(Sn1, DocumentId, Text1, Text2, FechaVersion, Sn2):-
 	getActivosPdocs(Sn1,Activo),
 	length(Activo,1),
 	getUserActivo(Activo, UserActivo),
@@ -1125,13 +1251,12 @@ paradigmaDocsSearchAndReplace(Sn1, DocumentId, Text1, Text2, Sn2):-
 	getHistorialDocumento(DocEditar, HistorialDoc),
 	getNameDocumento(DocEditar, NameDoc),
 	length(HistorialDoc, NewIDVersion),
-	historial(DateDoc, NewTexto, NewIDVersion, NewVersionHist),
+	historial(FechaVersion, NewTexto, NewIDVersion, NewVersionHist),
 	append(HistorialDoc, [NewVersionHist], NewHistorialDoc),
 	NewDocumento = [AutorDoc, DateDoc, NameDoc, NewTexto, PermisosDoc, NewHistorialDoc, DocumentId],
 	borrarDocDuplicado(DocEditar, Documents, NewDocuments),
 	append(NewDocuments, [NewDocumento], DocumentsFinal),
 	paradigmadocsActualizado(NamePdocs,DatePdocs,Users,[],DocumentsFinal, Sn2).
-
 paradigmaDocsSearchAndReplace(Sn1, _, _, _, Sn2):-
 	getActivosPdocs(Sn1,Activo),
 	length(Activo,1),
@@ -1142,8 +1267,6 @@ paradigmaDocsSearchAndReplace(Sn1, _, _, _, Sn2):-
 	getRegistradosPdocs(Sn1, Users),
 	paradigmadocsActualizado(NamePdocs,DatePdocs,Users,[],Documents, Sn2).
 
-
-	
 /*______________________________________________________________________________________________________
   _____       _   _____   __  __   ____    _        ___    ____  
  | ____|     | | | ____| |  \/  | |  _ \  | |      / _ \  / ___| 
@@ -1161,4 +1284,3 @@ ________________________________________________________________________________
 % date(20, 12, 2021, D1), date(21,12,2021, D2), date(3,1,2022,D3), paradigmaDocs("gDocs", D1, PD1), paradigmaDocsRegister(PD1,D1,"user1", "pass1", PD2), paradigmaDocsRegister(PD2,D2,"user2", "pass2", PD3), paradigmaDocsRegister(PD3,D3,"user3", "pass3", PD4), paradigmaDocsLogin(PD4, "user1", "pass1", PD5), paradigmaDocsCreate(PD5, D1, "lab1","scheme", PD6).
 % date(20, 12, 2021, D1), date(21,12,2021, D2), date(3,1,2022,D3), paradigmaDocs("gDocs", D1, PD1), paradigmaDocsRegister(PD1,D1,"user1", "pass1", PD2), paradigmaDocsRegister(PD2,D2,"user2", "pass2", PD3), paradigmaDocsRegister(PD3,D3,"user3", "pass3", PD4), paradigmaDocsLogin(PD4, "user1", "pass1", PD5), paradigmaDocsCreate(PD5, D1, "lab1","scheme", PD6), paradigmaDocsLogin(PD6, "user1", "pass1", PD7), paradigmaDocsAdd(PD7, 0, D2, "newtext", PD8).
 % date(20, 12, 2021, D1), date(21,12,2021, D2), date(3,1,2022,D3), paradigmaDocs("gDocs", D1, PD1), paradigmaDocsRegister(PD1,D1,"user1", "pass1", PD2), paradigmaDocsRegister(PD2,D2,"user2", "pass2", PD3), paradigmaDocsRegister(PD3,D3,"user3", "pass3", PD4), paradigmaDocsLogin(PD4, "user1", "pass1", PD5), paradigmaDocsCreate(PD5, D1, "lab1","scheme", PD6), paradigmaDocsLogin(PD6, "user1", "pass1", PD7), paradigmaDocsAdd(PD7, 0, D2, "newtext", PD8), paradigmaDocsLogin(PD8, "user1", "pass1", PD9), paradigmaDocsRestoreVersion(PD9, 0, 0, PD10).
-% DOCUMENTAR ARIDAD
