@@ -386,6 +386,9 @@ ________________________________________________________________________________
 
 % ---------------------------------CONSTRUCTOR Y PERTENENCIA-------------------------------------------
 
+% Clausulas
+% Reglas
+
 % Dominio: Tres strings, una fecha, un integer y un TDA Documento
 % Descripcion: Predicado que crea un Documento.
 documento(Autor,Date,Nombre,Contenido, IDDoc, DocFinal):-
@@ -804,9 +807,6 @@ ________________________________________________________________________________
 % getUserActivo(Activos, UserActivo) (aridad = 2)
 % getDocumentosPdocs(ParadigmaDocs, Documents) (aridad = 2)
 % paradigmadocsActualizado(Nombre,Fecha,ListRegistrados,ListActivo,ListDocumentos,PDOUT) (aridad = 6)
-% getDiaFecha(Date,DD) (aridad = 2)
-% getMesFecha(Date,MM) (aridad = 2)
-% getAnioFecha(Date,AAAA) (aridad = 2)
 
 % Metas primarias: paradigmaDocs, getNombrePdocs, getDatePdocs, getRegistradosPdocs, getUserActivo,
 % getActivosPdocs, getDocumentosPdocs, paradigmaDocsActualizado, 
@@ -819,6 +819,9 @@ ________________________________________________________________________________
 % registrados, el usuario activo y los documentos.
 
 % --------------------------------------------CONSTRUCTOR Y PERTENENCIA--------------------------------------
+
+% Clausulas
+% Reglas
 
 % Dominio: Un nombre de tipo string, una fecha y un TDA ParadigmaDocs
 % Descripcion: Predicado que crea una plataforma de tipo paradigmaDocs
@@ -891,7 +894,36 @@ paradigmadocsActualizado(Nombre,Fecha,ListRegistrados,ListActivo,ListDocumentos,
   \___/  |____/  |_____| |___|  \____| /_/   \_\   |_|    \___/  |_| \_\ |___|  \___/  |____/ 
 _______________________________________________________________________________________________________*/
 
+% Dominio: 
+% Sn1, Sn2: ParadigmaDocs
+% Fecha, Date, FechaVersion: Fecha
+% Username, Password, Nombre, Contenido, ContenidoTexto, StrOut, SearchText, Text1, Text2: String
+% DocumentId, IdVersion, NumberOfCharacteres: Integer
+% Documents, ListaPermisos, ListaUsernamesPermitidos, DocumentIds: List
+
+% Predicados:
+% paradigmaDocsRegister(Sn1, Fecha, Username, Password, Sn2) (aridad = 5)
+% paradigmaDocsLogin(Sn1,Username,Password,Sn2) (aridad = 4)
+% paradigmaDocsCreate(Sn1, Fecha, Nombre, Contenido, Sn2) (aridad = 5)
+% paradigmaDocsShare(Sn1, DocumentId, ListaPermisos, ListaUsernamesPermitidos, Sn2) (aridad = 5)
+% paradigmaDocsAdd(Sn1, DocumentId, Date, ContenidoTexto, Sn2) (aridad = 5)
+% paradigmaDocsRestoreVersion(Sn1, DocumentId, IdVersion, Sn2) (aridad = 4)
+% paradigmaDocsToString(Sn1, StrOut) (aridad = 2)
+% paradigmaDocsRevokeAllAccesses(Sn1,DocumentIds, Sn2) (aridad = 3)
+% paradigmaDocsSearch(Sn1, SearchText,  Documents) (aridad = 3)
+% paradigmaDocsDelete(Sn1, DocumentId,  Date, NumberOfCharacters, Sn2) (aridad = 5)
+% paradigmaDocsSearchAndReplace(Sn1, DocumentId, Text1, Text2, FechaVersion, Sn2) (aridad = 6)
+
+% Metas primarias: paradigmaDocsRegister, paradigmaDocsLogin, paradigmaDocsCreate, paradigmaDocsShare,
+% paradigmaDocsAdd, paradigmaDocsRestoreVersion, paradigmaDocsToString, paradigmaDocsRevokeAllAccesses,
+% paradigmaDocsSearch, paradigmaDocsDelete, paradigmaDocsSearchAndReplace
+
+% Metas Secundarias: Todos los predicados de los TDAs. 
+
 % --------------------------------------PREDICADO PARADIGMADOCSREGISRER---------------------------------
+
+% Clausulas
+% Reglas
 
 % Dominio: Un paradigmaDocs, una fecha (date), un username (string), un password (string) y un
 % paradigmaDocs actualizado
@@ -1120,13 +1152,14 @@ paradigmaDocsRevokeAllAccesses(Sn1,DocumentIds, Sn2):-
 	getDocumentosPdocs(Sn1, Documents),
 	not(length(DocumentIds, 0)),
 	obtenerDocumentosPropios(DocumentIds, Documents, UserActivo, [], DocumentosPropios),
+	not(length(DocumentosPropios, 0)), !,
 	maplist(eliminarTodosLosPermisos, DocumentosPropios, DocumentosSinPermisos),
 	eliminarDocsDuplicados(DocumentosPropios, Documents, NewDocuments),
 	agregarNuevosDocs(DocumentosSinPermisos, NewDocuments, NewDocuments2),
 	getNombrePdocs(Sn1, NamePdocs),
 	getDatePdocs(Sn1, DatePdocs),
 	getRegistradosPdocs(Sn1, Users),
-	paradigmadocsActualizado(NamePdocs, DatePdocs, Users, [], NewDocuments2, Sn2).
+	paradigmadocsActualizado(NamePdocs, DatePdocs, Users, [], NewDocuments2, Sn2), !.
 paradigmaDocsRevokeAllAccesses(Sn1,DocumentIds, Sn2Altern):-
 	getActivosPdocs(Sn1,Activo),
 	length(Activo,1),
@@ -1140,7 +1173,7 @@ paradigmaDocsRevokeAllAccesses(Sn1,DocumentIds, Sn2Altern):-
 	getNombrePdocs(Sn1, NamePdocs),
 	getDatePdocs(Sn1, DatePdocs),
 	getRegistradosPdocs(Sn1, Users),
-	paradigmadocsActualizado(NamePdocs, DatePdocs, Users, [], NewDocuments2, Sn2Altern).
+	paradigmadocsActualizado(NamePdocs, DatePdocs, Users, [], NewDocuments2, Sn2Altern), !.
 
 % --------------------------------PREDICADO PARADIGMADOCSSEARCH--------------------------------------
 
@@ -1156,12 +1189,8 @@ paradigmaDocsSearch(Sn1, SearchText,  Documents):-
 	getUserActivo(Activo, UserActivo),
 	getDocumentosPdocs(Sn1, DocumentsPdocs),
 	obtenerDocsAcceso(DocumentsPdocs, UserActivo, [], AllDocsUser),
-	maplist(getContenidoDocumento, AllDocsUser, ContentDocuments),
-	searchInDocuments(ContentDocuments, SearchText, [], DocsTextFound),
 	searchInDocsHist(AllDocsUser, SearchText, [], DocsHistTextFound),
-	unirBusquedas(DocsTextFound, DocsHistTextFound, DocsTextFinal),
-	DocsTextFinal = Documents, !.
-
+	DocsHistTextFound = Documents, !.
 
 % --------------------------------PREDICADO PARADIGMADOCSDELETE--------------------------------------
 
@@ -1256,16 +1285,18 @@ paradigmaDocsSearchAndReplace(Sn1, DocumentId, Text1, Text2, FechaVersion, Sn2):
 	NewDocumento = [AutorDoc, DateDoc, NameDoc, NewTexto, PermisosDoc, NewHistorialDoc, DocumentId],
 	borrarDocDuplicado(DocEditar, Documents, NewDocuments),
 	append(NewDocuments, [NewDocumento], DocumentsFinal),
-	paradigmadocsActualizado(NamePdocs,DatePdocs,Users,[],DocumentsFinal, Sn2).
-paradigmaDocsSearchAndReplace(Sn1, _, _, _, Sn2):-
+	paradigmadocsActualizado(NamePdocs,DatePdocs,Users,[],DocumentsFinal, Sn2),!.
+paradigmaDocsSearchAndReplace(Sn1,DocumentId,_, _, _, Sn2):-
 	getActivosPdocs(Sn1,Activo),
 	length(Activo,1),
+	getDocumentosPdocs(Sn1, Documents),
+	encontrarPorIDDocumento(Documents,DocumentId,_),
 	write("No se encontraron coincidencias de busqueda y por lo tanto no se puede reemplazar el texto."),
 	getNombrePdocs(Sn1, NamePdocs),
 	getDatePdocs(Sn1, DatePdocs),
-	getDocumentosPdocs(Sn1, Documents),
+	getDocumentosPdocs(Sn1,Documents),
 	getRegistradosPdocs(Sn1, Users),
-	paradigmadocsActualizado(NamePdocs,DatePdocs,Users,[],Documents, Sn2).
+	paradigmadocsActualizado(NamePdocs,DatePdocs,Users,[],Documents, Sn2), !.
 
 /*______________________________________________________________________________________________________
   _____       _   _____   __  __   ____    _        ___    ____  
@@ -1360,7 +1391,7 @@ ________________________________________________________________________________
 % EJ3: User2 se loguea e intenta restaurar una version que no existe del documento de ID 1 (Salida: False)
 % date(20, 12, 2021, D1), date(21,12,2021, D2), date(3,1,2022,D3), paradigmaDocs("gDocs", D1, PD1), paradigmaDocsRegister(PD1, D1, "user1", "pass1", PD2),paradigmaDocsRegister(PD2,D2,"user2","pass2",PD3),paradigmaDocsRegister(PD3,D3,"user3","pass3",PD4), paradigmaDocsRegister(PD4,D2,"user4","pass4",PD5), paradigmaDocsRegister(PD5,D2,"user5","pass5",PD6), paradigmaDocsLogin(PD6, "user1", "pass1", PD7),paradigmaDocsCreate(PD7,D1,"lab1","scheme",PD8), paradigmaDocsLogin(PD8, "user2","pass2", PD9), paradigmaDocsCreate(PD9, D2, "lab2", "prolog", PD10), paradigmaDocsLogin(PD10, "user1","pass1", PD11), paradigmaDocsCreate(PD11, D3, "lab3", "java", PD12), paradigmaDocsLogin(PD12, "user1","pass1", PD13), paradigmaDocsShare(PD13,0,["W","S"],["user2","user3"],PD14), paradigmaDocsLogin(PD14, "user2","pass2", PD15), paradigmaDocsShare(PD15,1,["R","C"],["user1","user3"],PD16), paradigmaDocsLogin(PD16, "user3","pass3", PD17), paradigmaDocsShare(PD17,0,["R"],["user4"],PD18), paradigmaDocsLogin(PD18, "user1","pass1", PD19), paradigmaDocsAdd(PD19,2,D3,"netbeans",PD20), paradigmaDocsLogin(PD20, "user3","pass3", PD21), paradigmaDocsAdd(PD21, 0, D2, "racket", PD22), paradigmaDocsLogin(PD22, "user2", "pass2", PD23), paradigmaDocsRestoreVersion(PD23, 1, 9, PD24).
 
-% --------------------------------Ejemplos Predicado ParadigmaDocsToString-------------------------------
+% --------------------------------Ejemplos Predicado ParadigmaDocsToString--------------------------------------
 
 % EJ1: User1 se loguea y utiliza paradigmaDocsToString. Se muestra toda la informacion de User1 (Salida: Result)
 % date(20, 12, 2021, D1), date(21,12,2021, D2), date(3,1,2022,D3), paradigmaDocs("gDocs", D1, PD1), paradigmaDocsRegister(PD1, D1, "user1", "pass1", PD2),paradigmaDocsRegister(PD2,D2,"user2","pass2",PD3),paradigmaDocsRegister(PD3,D3,"user3","pass3",PD4), paradigmaDocsRegister(PD4,D2,"user4","pass4",PD5), paradigmaDocsRegister(PD5,D2,"user5","pass5",PD6), paradigmaDocsLogin(PD6, "user1", "pass1", PD7),paradigmaDocsCreate(PD7,D1,"lab1","scheme",PD8), paradigmaDocsLogin(PD8, "user2","pass2", PD9), paradigmaDocsCreate(PD9, D2, "lab2", "prolog", PD10), paradigmaDocsLogin(PD10, "user1","pass1", PD11), paradigmaDocsCreate(PD11, D3, "lab3", "java", PD12), paradigmaDocsLogin(PD12, "user1","pass1", PD13), paradigmaDocsShare(PD13,0,["W","S"],["user2","user3"],PD14), paradigmaDocsLogin(PD14, "user2","pass2", PD15), paradigmaDocsShare(PD15,1,["R","C"],["user1","user3"],PD16), paradigmaDocsLogin(PD16, "user3","pass3", PD17), paradigmaDocsShare(PD17,0,["R"],["user4"],PD18), paradigmaDocsLogin(PD18, "user1","pass1", PD19), paradigmaDocsAdd(PD19,2,D3,"netbeans",PD20), paradigmaDocsLogin(PD20, "user3","pass3", PD21), paradigmaDocsAdd(PD21, 0, D2, "racket", PD22), paradigmaDocsLogin(PD22, "user1", "pass1", PD23), paradigmaDocsToString(PD23, Result).
@@ -1380,4 +1411,46 @@ ________________________________________________________________________________
 % EJ5: Nadie se loguea en la plataforma y se utiliza paradigmaDocsToString. Se muestra toda la informacion de paradigmaDocs (Salida: Result)
 % date(20, 12, 2021, D1), date(21,12,2021, D2), date(3,1,2022,D3), paradigmaDocs("gDocs", D1, PD1), paradigmaDocsRegister(PD1, D1, "user1", "pass1", PD2),paradigmaDocsRegister(PD2,D2,"user2","pass2",PD3),paradigmaDocsRegister(PD3,D3,"user3","pass3",PD4), paradigmaDocsRegister(PD4,D2,"user4","pass4",PD5), paradigmaDocsRegister(PD5,D2,"user5","pass5",PD6), paradigmaDocsLogin(PD6, "user1", "pass1", PD7),paradigmaDocsCreate(PD7,D1,"lab1","scheme",PD8), paradigmaDocsLogin(PD8, "user2","pass2", PD9), paradigmaDocsCreate(PD9, D2, "lab2", "prolog", PD10), paradigmaDocsLogin(PD10, "user1","pass1", PD11), paradigmaDocsCreate(PD11, D3, "lab3", "java", PD12), paradigmaDocsLogin(PD12, "user1","pass1", PD13), paradigmaDocsShare(PD13,0,["W","S"],["user2","user3"],PD14), paradigmaDocsLogin(PD14, "user2","pass2", PD15), paradigmaDocsShare(PD15,1,["R","C"],["user1","user3"],PD16), paradigmaDocsLogin(PD16, "user3","pass3", PD17), paradigmaDocsShare(PD17,0,["R"],["user4"],PD18), paradigmaDocsLogin(PD18, "user1","pass1", PD19), paradigmaDocsAdd(PD19,2,D3,"netbeans",PD20), paradigmaDocsLogin(PD20, "user3","pass3", PD21), paradigmaDocsAdd(PD21, 0, D2, "racket", PD22), paradigmaDocsToString(PD22, Result).
 
+% --------------------------------Ejemplos Predicado ParadigmaDocsRevokeAllAccesses-----------------------------
 
+% EJ1: User1 se loguea y  quita los permisos externos a todos sus documentos, dejando solamente los suyos (Salida: PD24).
+% date(20, 12, 2021, D1), date(21,12,2021, D2), date(3,1,2022,D3), paradigmaDocs("gDocs", D1, PD1), paradigmaDocsRegister(PD1, D1, "user1", "pass1", PD2),paradigmaDocsRegister(PD2,D2,"user2","pass2",PD3),paradigmaDocsRegister(PD3,D3,"user3","pass3",PD4), paradigmaDocsRegister(PD4,D2,"user4","pass4",PD5), paradigmaDocsRegister(PD5,D2,"user5","pass5",PD6), paradigmaDocsLogin(PD6, "user1", "pass1", PD7),paradigmaDocsCreate(PD7,D1,"lab1","scheme",PD8), paradigmaDocsLogin(PD8, "user2","pass2", PD9), paradigmaDocsCreate(PD9, D2, "lab2", "prolog", PD10), paradigmaDocsLogin(PD10, "user1","pass1", PD11), paradigmaDocsCreate(PD11, D3, "lab3", "java", PD12), paradigmaDocsLogin(PD12, "user1","pass1", PD13), paradigmaDocsShare(PD13,0,["W","S"],["user2","user3"],PD14), paradigmaDocsLogin(PD14, "user2","pass2", PD15), paradigmaDocsShare(PD15,1,["R","C"],["user1","user3"],PD16), paradigmaDocsLogin(PD16, "user3","pass3", PD17), paradigmaDocsShare(PD17,0,["R"],["user4"],PD18), paradigmaDocsLogin(PD18, "user1","pass1", PD19), paradigmaDocsAdd(PD19,2,D3,"netbeans",PD20), paradigmaDocsLogin(PD20, "user3","pass3", PD21), paradigmaDocsAdd(PD21, 0, D2, "racket", PD22), paradigmaDocsLogin(PD22,"user1","pass1", PD23), paradigmaDocsRevokeAllAccesses(PD23, [], PD24).
+
+% EJ2: User2 se loguea y quita los permisos externos al unico documento que tiene, dejando solo sus permisos (Salida: PD26)
+% date(20, 12, 2021, D1), date(21,12,2021, D2), date(3,1,2022,D3), paradigmaDocs("gDocs", D1, PD1), paradigmaDocsRegister(PD1, D1, "user1", "pass1", PD2),paradigmaDocsRegister(PD2,D2,"user2","pass2",PD3),paradigmaDocsRegister(PD3,D3,"user3","pass3",PD4), paradigmaDocsRegister(PD4,D2,"user4","pass4",PD5), paradigmaDocsRegister(PD5,D2,"user5","pass5",PD6), paradigmaDocsLogin(PD6, "user1", "pass1", PD7),paradigmaDocsCreate(PD7,D1,"lab1","scheme",PD8), paradigmaDocsLogin(PD8, "user2","pass2", PD9), paradigmaDocsCreate(PD9, D2, "lab2", "prolog", PD10), paradigmaDocsLogin(PD10, "user1","pass1", PD11), paradigmaDocsCreate(PD11, D3, "lab3", "java", PD12), paradigmaDocsLogin(PD12, "user1","pass1", PD13), paradigmaDocsShare(PD13,0,["W","S"],["user2","user3"],PD14), paradigmaDocsLogin(PD14, "user2","pass2", PD15), paradigmaDocsShare(PD15,1,["R","C"],["user1","user3"],PD16), paradigmaDocsLogin(PD16, "user3","pass3", PD17), paradigmaDocsShare(PD17,0,["R"],["user4"],PD18), paradigmaDocsLogin(PD18, "user1","pass1", PD19), paradigmaDocsAdd(PD19,2,D3,"netbeans",PD20), paradigmaDocsLogin(PD20, "user3","pass3", PD21), paradigmaDocsAdd(PD21, 0, D2, "racket", PD22), paradigmaDocsLogin(PD22,"user1","pass1", PD23), paradigmaDocsRevokeAllAccesses(PD23, [], PD24), paradigmaDocsLogin(PD24,"user2","pass2", PD25), paradigmaDocsRevokeAllAccesses(PD25, [1], PD26). 
+
+% EJ3: User4 se loguea e intenta quitar los permisos a todos los documentos, pero no es el autor (Salida: False)
+% date(20, 12, 2021, D1), date(21,12,2021, D2), date(3,1,2022,D3), paradigmaDocs("gDocs", D1, PD1), paradigmaDocsRegister(PD1, D1, "user1", "pass1", PD2),paradigmaDocsRegister(PD2,D2,"user2","pass2",PD3),paradigmaDocsRegister(PD3,D3,"user3","pass3",PD4), paradigmaDocsRegister(PD4,D2,"user4","pass4",PD5), paradigmaDocsRegister(PD5,D2,"user5","pass5",PD6), paradigmaDocsLogin(PD6, "user1", "pass1", PD7),paradigmaDocsCreate(PD7,D1,"lab1","scheme",PD8), paradigmaDocsLogin(PD8, "user2","pass2", PD9), paradigmaDocsCreate(PD9, D2, "lab2", "prolog", PD10), paradigmaDocsLogin(PD10, "user1","pass1", PD11), paradigmaDocsCreate(PD11, D3, "lab3", "java", PD12), paradigmaDocsLogin(PD12, "user1","pass1", PD13), paradigmaDocsShare(PD13,0,["W","S"],["user2","user3"],PD14), paradigmaDocsLogin(PD14, "user2","pass2", PD15), paradigmaDocsShare(PD15,1,["R","C"],["user1","user3"],PD16), paradigmaDocsLogin(PD16, "user3","pass3", PD17), paradigmaDocsShare(PD17,0,["R"],["user4"],PD18), paradigmaDocsLogin(PD18, "user1","pass1", PD19), paradigmaDocsAdd(PD19,2,D3,"netbeans",PD20), paradigmaDocsLogin(PD20, "user3","pass3", PD21), paradigmaDocsAdd(PD21, 0, D2, "racket", PD22), paradigmaDocsLogin(PD22,"user1","pass1", PD23), paradigmaDocsRevokeAllAccesses(PD23, [], PD24), paradigmaDocsLogin(PD24,"user4","pass4", PD25), paradigmaDocsRevokeAllAccesses(PD25, [0,1,2], PD26).
+
+% --------------------------------Ejemplos Predicado ParadigmaDocsSearch----------------------------------------
+
+% EJ1: User1 se louea y busca el documento que contiene el texto "java" (Salida: Documents)
+% date(20, 12, 2021, D1), date(21,12,2021, D2), date(3,1,2022,D3), paradigmaDocs("gDocs", D1, PD1), paradigmaDocsRegister(PD1, D1, "user1", "pass1", PD2),paradigmaDocsRegister(PD2,D2,"user2","pass2",PD3),paradigmaDocsRegister(PD3,D3,"user3","pass3",PD4), paradigmaDocsRegister(PD4,D2,"user4","pass4",PD5), paradigmaDocsRegister(PD5,D2,"user5","pass5",PD6), paradigmaDocsLogin(PD6, "user1", "pass1", PD7),paradigmaDocsCreate(PD7,D1,"lab1","scheme",PD8), paradigmaDocsLogin(PD8, "user2","pass2", PD9), paradigmaDocsCreate(PD9, D2, "lab2", "prolog", PD10), paradigmaDocsLogin(PD10, "user1","pass1", PD11), paradigmaDocsCreate(PD11, D3, "lab3", "java", PD12), paradigmaDocsLogin(PD12, "user1","pass1", PD13), paradigmaDocsShare(PD13,0,["W","S"],["user2","user3"],PD14), paradigmaDocsLogin(PD14, "user2","pass2", PD15), paradigmaDocsShare(PD15,1,["R","C"],["user1","user3"],PD16), paradigmaDocsLogin(PD16, "user3","pass3", PD17), paradigmaDocsShare(PD17,0,["R"],["user4"],PD18), paradigmaDocsLogin(PD18, "user1","pass1", PD19), paradigmaDocsAdd(PD19,2,D3,"netbeans",PD20), paradigmaDocsLogin(PD20, "user3","pass3", PD21), paradigmaDocsAdd(PD21, 0, D2, "racket", PD22), paradigmaDocsLogin(PD22, "user1","pass1", PD23), paradigmaDocsSearch(PD23,"java", Documents).
+
+% EJ2: User1 se loguea y gracias a sus permisos de lectura, busca el texto "prolog" y obtiene un documento (Salida: Documents)
+% date(20, 12, 2021, D1), date(21,12,2021, D2), date(3,1,2022,D3), paradigmaDocs("gDocs", D1, PD1), paradigmaDocsRegister(PD1, D1, "user1", "pass1", PD2),paradigmaDocsRegister(PD2,D2,"user2","pass2",PD3),paradigmaDocsRegister(PD3,D3,"user3","pass3",PD4), paradigmaDocsRegister(PD4,D2,"user4","pass4",PD5), paradigmaDocsRegister(PD5,D2,"user5","pass5",PD6), paradigmaDocsLogin(PD6, "user1", "pass1", PD7),paradigmaDocsCreate(PD7,D1,"lab1","scheme",PD8), paradigmaDocsLogin(PD8, "user2","pass2", PD9), paradigmaDocsCreate(PD9, D2, "lab2", "prolog", PD10), paradigmaDocsLogin(PD10, "user1","pass1", PD11), paradigmaDocsCreate(PD11, D3, "lab3", "java", PD12), paradigmaDocsLogin(PD12, "user1","pass1", PD13), paradigmaDocsShare(PD13,0,["W","S"],["user2","user3"],PD14), paradigmaDocsLogin(PD14, "user2","pass2", PD15), paradigmaDocsShare(PD15,1,["R","C"],["user1","user3"],PD16), paradigmaDocsLogin(PD16, "user3","pass3", PD17), paradigmaDocsShare(PD17,0,["R"],["user4"],PD18), paradigmaDocsLogin(PD18, "user1","pass1", PD19), paradigmaDocsAdd(PD19,2,D3,"netbeans",PD20), paradigmaDocsLogin(PD20, "user3","pass3", PD21), paradigmaDocsAdd(PD21, 0, D2, "racket", PD22), paradigmaDocsLogin(PD22, "user1","pass1", PD23), paradigmaDocsSearch(PD23,"prolog", Documents).
+
+% EJ3: User5 se loguea e intenta buscar documentos que contengan el texto "a", pero no tiene acceso a ninguno. (Salida: Documents)
+% date(20, 12, 2021, D1), date(21,12,2021, D2), date(3,1,2022,D3), paradigmaDocs("gDocs", D1, PD1), paradigmaDocsRegister(PD1, D1, "user1", "pass1", PD2),paradigmaDocsRegister(PD2,D2,"user2","pass2",PD3),paradigmaDocsRegister(PD3,D3,"user3","pass3",PD4), paradigmaDocsRegister(PD4,D2,"user4","pass4",PD5), paradigmaDocsRegister(PD5,D2,"user5","pass5",PD6), paradigmaDocsLogin(PD6, "user1", "pass1", PD7),paradigmaDocsCreate(PD7,D1,"lab1","scheme",PD8), paradigmaDocsLogin(PD8, "user2","pass2", PD9), paradigmaDocsCreate(PD9, D2, "lab2", "prolog", PD10), paradigmaDocsLogin(PD10, "user1","pass1", PD11), paradigmaDocsCreate(PD11, D3, "lab3", "java", PD12), paradigmaDocsLogin(PD12, "user1","pass1", PD13), paradigmaDocsShare(PD13,0,["W","S"],["user2","user3"],PD14), paradigmaDocsLogin(PD14, "user2","pass2", PD15), paradigmaDocsShare(PD15,1,["R","C"],["user1","user3"],PD16), paradigmaDocsLogin(PD16, "user3","pass3", PD17), paradigmaDocsShare(PD17,0,["R"],["user4"],PD18), paradigmaDocsLogin(PD18, "user1","pass1", PD19), paradigmaDocsAdd(PD19,2,D3,"netbeans",PD20), paradigmaDocsLogin(PD20, "user3","pass3", PD21), paradigmaDocsAdd(PD21, 0, D2, "racket", PD22), paradigmaDocsLogin(PD22, "user5","pass5", PD23), paradigmaDocsSearch(PD23,"a", Documents).
+
+% --------------------------------Ejemplos Predicado ParadigmaDocsDelete----------------------------------------
+
+% EJ1: User 1 se loguea y elimina 4 caracteres del documento de ID 0, el cual es de su propiedad (Salida: PD24)
+% date(20, 12, 2021, D1), date(21,12,2021, D2), date(3,1,2022,D3), paradigmaDocs("gDocs", D1, PD1), paradigmaDocsRegister(PD1, D1, "user1", "pass1", PD2),paradigmaDocsRegister(PD2,D2,"user2","pass2",PD3),paradigmaDocsRegister(PD3,D3,"user3","pass3",PD4), paradigmaDocsRegister(PD4,D2,"user4","pass4",PD5), paradigmaDocsRegister(PD5,D2,"user5","pass5",PD6), paradigmaDocsLogin(PD6, "user1", "pass1", PD7),paradigmaDocsCreate(PD7,D1,"lab1","scheme",PD8), paradigmaDocsLogin(PD8, "user2","pass2", PD9), paradigmaDocsCreate(PD9, D2, "lab2", "prolog", PD10), paradigmaDocsLogin(PD10, "user1","pass1", PD11), paradigmaDocsCreate(PD11, D3, "lab3", "java", PD12), paradigmaDocsLogin(PD12, "user1","pass1", PD13), paradigmaDocsShare(PD13,0,["W","S"],["user2","user3"],PD14), paradigmaDocsLogin(PD14, "user2","pass2", PD15), paradigmaDocsShare(PD15,1,["R","C"],["user1","user3"],PD16), paradigmaDocsLogin(PD16, "user3","pass3", PD17), paradigmaDocsShare(PD17,0,["R"],["user4"],PD18), paradigmaDocsLogin(PD18, "user1","pass1", PD19), paradigmaDocsAdd(PD19,2,D3,"netbeans",PD20), paradigmaDocsLogin(PD20, "user3","pass3", PD21), paradigmaDocsAdd(PD21, 0, D2, "racket", PD22), paradigmaDocsLogin(PD22, "user1", "pass1", PD23), paradigmaDocsDelete(PD23, 0, D3, 4, PD24).
+
+% EJ2: User2 se loguea y debido a que la cantidad de caracteres a eliminar es mayor a la del texto de la version activa, elimina todo el texto (Salida: PD24)
+% date(20, 12, 2021, D1), date(21,12,2021, D2), date(3,1,2022,D3), paradigmaDocs("gDocs", D1, PD1), paradigmaDocsRegister(PD1, D1, "user1", "pass1", PD2),paradigmaDocsRegister(PD2,D2,"user2","pass2",PD3),paradigmaDocsRegister(PD3,D3,"user3","pass3",PD4), paradigmaDocsRegister(PD4,D2,"user4","pass4",PD5), paradigmaDocsRegister(PD5,D2,"user5","pass5",PD6), paradigmaDocsLogin(PD6, "user1", "pass1", PD7),paradigmaDocsCreate(PD7,D1,"lab1","scheme",PD8), paradigmaDocsLogin(PD8, "user2","pass2", PD9), paradigmaDocsCreate(PD9, D2, "lab2", "prolog", PD10), paradigmaDocsLogin(PD10, "user1","pass1", PD11), paradigmaDocsCreate(PD11, D3, "lab3", "java", PD12), paradigmaDocsLogin(PD12, "user1","pass1", PD13), paradigmaDocsShare(PD13,0,["W","S"],["user2","user3"],PD14), paradigmaDocsLogin(PD14, "user2","pass2", PD15), paradigmaDocsShare(PD15,1,["R","C"],["user1","user3"],PD16), paradigmaDocsLogin(PD16, "user3","pass3", PD17), paradigmaDocsShare(PD17,0,["R"],["user4"],PD18), paradigmaDocsLogin(PD18, "user1","pass1", PD19), paradigmaDocsAdd(PD19,2,D3,"netbeans",PD20), paradigmaDocsLogin(PD20, "user3","pass3", PD21), paradigmaDocsAdd(PD21, 0, D2, "racket", PD22), paradigmaDocsLogin(PD22, "user2", "pass2", PD23), paradigmaDocsDelete(PD23, 1, D3, 99, PD24).
+
+% EJ3: User4 se loguea e intenta eliminar todos los caracteres del Documento 0, pero no tiene los permisos para hacerlo (Salida: False)
+% date(20, 12, 2021, D1), date(21,12,2021, D2), date(3,1,2022,D3), paradigmaDocs("gDocs", D1, PD1), paradigmaDocsRegister(PD1, D1, "user1", "pass1", PD2),paradigmaDocsRegister(PD2,D2,"user2","pass2",PD3),paradigmaDocsRegister(PD3,D3,"user3","pass3",PD4), paradigmaDocsRegister(PD4,D2,"user4","pass4",PD5), paradigmaDocsRegister(PD5,D2,"user5","pass5",PD6), paradigmaDocsLogin(PD6, "user1", "pass1", PD7),paradigmaDocsCreate(PD7,D1,"lab1","scheme",PD8), paradigmaDocsLogin(PD8, "user2","pass2", PD9), paradigmaDocsCreate(PD9, D2, "lab2", "prolog", PD10), paradigmaDocsLogin(PD10, "user1","pass1", PD11), paradigmaDocsCreate(PD11, D3, "lab3", "java", PD12), paradigmaDocsLogin(PD12, "user1","pass1", PD13), paradigmaDocsShare(PD13,0,["W","S"],["user2","user3"],PD14), paradigmaDocsLogin(PD14, "user2","pass2", PD15), paradigmaDocsShare(PD15,1,["R","C"],["user1","user3"],PD16), paradigmaDocsLogin(PD16, "user3","pass3", PD17), paradigmaDocsShare(PD17,0,["R"],["user4"],PD18), paradigmaDocsLogin(PD18, "user1","pass1", PD19), paradigmaDocsAdd(PD19,2,D3,"netbeans",PD20), paradigmaDocsLogin(PD20, "user3","pass3", PD21), paradigmaDocsAdd(PD21, 0, D2, "racket", PD22), paradigmaDocsLogin(PD22, "user4", "pass4", PD23), paradigmaDocsDelete(PD23, 0, D3, 99, PD24).
+
+% --------------------------------Ejemplos Predicado ParadigmaSearchAndReplace-----------------------------------
+
+% EJ1: User1 se loguea y busca el texto "rack" en la version activa del Documento 0. Reemplaza "rack" por "seb". (Salida: PD24)
+% date(20, 12, 2021, D1), date(21,12,2021, D2), date(3,1,2022,D3), paradigmaDocs("gDocs", D1, PD1), paradigmaDocsRegister(PD1, D1, "user1", "pass1", PD2),paradigmaDocsRegister(PD2,D2,"user2","pass2",PD3),paradigmaDocsRegister(PD3,D3,"user3","pass3",PD4), paradigmaDocsRegister(PD4,D2,"user4","pass4",PD5), paradigmaDocsRegister(PD5,D2,"user5","pass5",PD6), paradigmaDocsLogin(PD6, "user1", "pass1", PD7),paradigmaDocsCreate(PD7,D1,"lab1","scheme",PD8), paradigmaDocsLogin(PD8, "user2","pass2", PD9), paradigmaDocsCreate(PD9, D2, "lab2", "prolog", PD10), paradigmaDocsLogin(PD10, "user1","pass1", PD11), paradigmaDocsCreate(PD11, D3, "lab3", "java", PD12), paradigmaDocsLogin(PD12, "user1","pass1", PD13), paradigmaDocsShare(PD13,0,["W","S"],["user2","user3"],PD14), paradigmaDocsLogin(PD14, "user2","pass2", PD15), paradigmaDocsShare(PD15,1,["R","C"],["user1","user3"],PD16), paradigmaDocsLogin(PD16, "user3","pass3", PD17), paradigmaDocsShare(PD17,0,["R"],["user4"],PD18), paradigmaDocsLogin(PD18, "user1","pass1", PD19), paradigmaDocsAdd(PD19,2,D3,"netbeans",PD20), paradigmaDocsLogin(PD20, "user3","pass3", PD21), paradigmaDocsAdd(PD21, 0, D2, "racket", PD22), paradigmaDocsLogin(PD22, "user1", "pass1", PD23), paradigmaDocsSearchAndReplace(PD23, 0, "rack", "seb", D3, PD24).
+
+% EJ2: User2 se loguea e intenta buscar el texto "javasoftware" pero este texto no se encuentra en la version activa y se manda una advertencia (Salida: PD24 / Mensaje por consola)
+% date(20, 12, 2021, D1), date(21,12,2021, D2), date(3,1,2022,D3), paradigmaDocs("gDocs", D1, PD1), paradigmaDocsRegister(PD1, D1, "user1", "pass1", PD2),paradigmaDocsRegister(PD2,D2,"user2","pass2",PD3),paradigmaDocsRegister(PD3,D3,"user3","pass3",PD4), paradigmaDocsRegister(PD4,D2,"user4","pass4",PD5), paradigmaDocsRegister(PD5,D2,"user5","pass5",PD6), paradigmaDocsLogin(PD6, "user1", "pass1", PD7),paradigmaDocsCreate(PD7,D1,"lab1","scheme",PD8), paradigmaDocsLogin(PD8, "user2","pass2", PD9), paradigmaDocsCreate(PD9, D2, "lab2", "prolog", PD10), paradigmaDocsLogin(PD10, "user1","pass1", PD11), paradigmaDocsCreate(PD11, D3, "lab3", "java", PD12), paradigmaDocsLogin(PD12, "user1","pass1", PD13), paradigmaDocsShare(PD13,0,["W","S"],["user2","user3"],PD14), paradigmaDocsLogin(PD14, "user2","pass2", PD15), paradigmaDocsShare(PD15,1,["R","C"],["user1","user3"],PD16), paradigmaDocsLogin(PD16, "user3","pass3", PD17), paradigmaDocsShare(PD17,0,["R"],["user4"],PD18), paradigmaDocsLogin(PD18, "user1","pass1", PD19), paradigmaDocsAdd(PD19,2,D3,"netbeans",PD20), paradigmaDocsLogin(PD20, "user3","pass3", PD21), paradigmaDocsAdd(PD21, 0, D2, "racket", PD22), paradigmaDocsLogin(PD22, "user2", "pass2", PD23), paradigmaDocsSearchAndReplace(PD23, 1, "javasoftware", "intelij", D3, PD24).
+
+% EJ3: User2 se loguea e intenta buscar y reemplazar un texto en un documento que no existe (Salida: False)
+% date(20, 12, 2021, D1), date(21,12,2021, D2), date(3,1,2022,D3), paradigmaDocs("gDocs", D1, PD1), paradigmaDocsRegister(PD1, D1, "user1", "pass1", PD2),paradigmaDocsRegister(PD2,D2,"user2","pass2",PD3),paradigmaDocsRegister(PD3,D3,"user3","pass3",PD4), paradigmaDocsRegister(PD4,D2,"user4","pass4",PD5), paradigmaDocsRegister(PD5,D2,"user5","pass5",PD6), paradigmaDocsLogin(PD6, "user1", "pass1", PD7),paradigmaDocsCreate(PD7,D1,"lab1","scheme",PD8), paradigmaDocsLogin(PD8, "user2","pass2", PD9), paradigmaDocsCreate(PD9, D2, "lab2", "prolog", PD10), paradigmaDocsLogin(PD10, "user1","pass1", PD11), paradigmaDocsCreate(PD11, D3, "lab3", "java", PD12), paradigmaDocsLogin(PD12, "user1","pass1", PD13), paradigmaDocsShare(PD13,0,["W","S"],["user2","user3"],PD14), paradigmaDocsLogin(PD14, "user2","pass2", PD15), paradigmaDocsShare(PD15,1,["R","C"],["user1","user3"],PD16), paradigmaDocsLogin(PD16, "user3","pass3", PD17), paradigmaDocsShare(PD17,0,["R"],["user4"],PD18), paradigmaDocsLogin(PD18, "user1","pass1", PD19), paradigmaDocsAdd(PD19,2,D3,"netbeans",PD20), paradigmaDocsLogin(PD20, "user3","pass3", PD21), paradigmaDocsAdd(PD21, 0, D2, "racket", PD22), paradigmaDocsLogin(PD22, "user2", "pass2", PD23), paradigmaDocsSearchAndReplace(PD23, 10, "javasoftware", "intelij", D3, PD24).
