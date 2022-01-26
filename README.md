@@ -27,3 +27,9 @@ Para facilitar el proceso de prueba, se puede clonar el repositorio:
 ```sh
 git clone https://github.com/PodssilDev/lab2_20537567_Serrano.git
 ```
+
+## Evaluación después de revisión
+* Nota Informe: 6.7 / 7.0
+* Nota Requerimientos Funcionales: 7.0 / 7.0
+* Nota Requerimientos No Funcionales: 6.4 / 7.0
+* Nota Final: 6.8 / 7.0
