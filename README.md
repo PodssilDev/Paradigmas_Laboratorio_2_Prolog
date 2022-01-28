@@ -25,7 +25,7 @@ El archivo main trae ejemplos para sus funciones en la parte final, en forma de 
 solo se debe escribir todo sin el %, el cual es el simbolo de comentario,  en la consola para poder ejecutar este ejemplo de la función Register.
 Para facilitar el proceso de prueba, se puede clonar el repositorio: 
 ```sh
-git clone https://github.com/PodssilDev/lab2_20537567_Serrano.git
+git clone https://github.com/PodssilDev/Paradigmas_Laboratorio_2_Prolog.git
 ```
 
 ## Evaluación después de revisión
