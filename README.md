@@ -14,7 +14,7 @@ Para ello, se crearon distintos TDAs o Tipos de Datos Abstractos, como por ejemp
 * TDA Fecha - donde se tiene una fecha con formato dd mm aaaa. 
 
 * Cada TDA tiene sus predicados, respetando lo visto en clase como lo son constructores, predicados de pertenencia, selectores, modificadores y otros predicados.
-Todos estos TDAs junto con los predicados obligatorios y opcionales, son creados en el archivo [main](https://github.com/PodssilDev/lab2_20537567_Serrano/blob/main/main_20537567_SerranoCarrasco.pl). Al final de este archivo se encuentran los ejemplos de prueba de tanto los predicados obligatorios como los predicados opcionales. **Se crearon 11/11 predicados en total, 7/7 obligatorios y 4/4 opcionales.**
+Todos estos TDAs junto con los predicados obligatorios y opcionales, son creados en el archivo [main](https://github.com/PodssilDev/Paradigmas_Laboratorio_2_Prolog/blob/main/main.pl). Al final de este archivo se encuentran los ejemplos de prueba de tanto los predicados obligatorios como los predicados opcionales. **Se crearon 11/11 predicados en total, 7/7 obligatorios y 4/4 opcionales.**
 ## Prerrequisitos
 Se necesita del programa [Swi-Prolog](https://www.swi-prolog.org/Download.html) versión 8.X.X o superior para ejecutar el código. También es posible ejecutar el código utilizando [Visual Studio Code](https://code.visualstudio.com) con la extension de Swi-Prolog.
 ## Como ejecutar
