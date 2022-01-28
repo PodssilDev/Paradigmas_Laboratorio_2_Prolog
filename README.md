@@ -1,8 +1,8 @@
 # Laboratorio 2 Paradigmas de Programación: Paradigma Lógico
-**Autor:** John Serrano Carrasco
-**Seccion:** 13310-0-A-1
-**Fecha de inicio:** 18 de Noviembre de 2021
-**Fecha de Entrega:** 03 de Enero de 2022
+* **Autor:** John Serrano Carrasco
+* **Seccion:** 13310-0-A-1
+* **Fecha de inicio:** 18 de Noviembre de 2021
+* **Fecha de Entrega:** 03 de Enero de 2022
 
 ## Descripción
 Este es el respositorio de mi **laboratorio 2** del curso de Paradigmas de Programación impartido en la Universidad de Santiago. En este laboratorio se ve la programación lógica, a traves del lenguaje de programación Prolog donde se busca crear una simulación a algo similar a una plataforma estilo Google Docs.
