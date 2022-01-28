@@ -18,7 +18,7 @@ Todos estos TDAs junto con los predicados obligatorios y opcionales, son creados
 ## Prerrequisitos
 Se necesita del programa [Swi-Prolog](https://www.swi-prolog.org/Download.html) versión 8.X.X o superior para ejecutar el código. También es posible ejecutar el código utilizando [Visual Studio Code](https://code.visualstudio.com) con la extension de Swi-Prolog.
 ## Como ejecutar
-El archivo main trae ejemplos para sus funciones en la parte final, en forma de comentarios. Para ejecutar estos ejemplos primero se debe cargar la base de conocimientos, o bien, si se esta utilizando Visual Studio Code, se debe escribir consult('main_20537567_SerranoCarrasco.pl'). Si prolog retorna True, entonces la base de conocimientos ya esta cargada y lo unico que debe hacerse para probar los ejemplos es copiar el codigo (sin el % de comentario) y colocarlo en la consola. Por ejemplo, para el ejemplo: 
+El archivo main trae ejemplos para sus funciones en la parte final, en forma de comentarios. Para ejecutar estos ejemplos primero se debe cargar la base de conocimientos, o bien, si se esta utilizando Visual Studio Code, se debe escribir consult('main.pl'). Si prolog retorna True, entonces la base de conocimientos ya esta cargada y lo unico que debe hacerse para probar los ejemplos es copiar el codigo (sin el % de comentario) y colocarlo en la consola. Por ejemplo, para el ejemplo: 
 ```sh
 % date(20, 12, 2021, D1), date(21,12,2021, D2), date(3,1,2022,D3), paradigmaDocs("gDocs", D1, PD1), paradigmaDocsRegister(PD1, D1, "user1", "pass1", PD2).
 ```

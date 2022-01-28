@@ -1,0 +1,14 @@
+Requerimientos Funcionales	Evaluación
+TDAs                                1
+ParadigmaDocsRegister	            1
+ParadigmaDocsLogin	            1
+ParadigmaDocsCreate	            1
+ParadigmaDocsShare	            1
+ParadigmaDocsAdd	            1
+ParadigmaDocsRestoreVersion	    1
+ParadigmaDocsToString               1
+ParadigmaDocsRevokeAllAccesses	    1
+ParadigmaDocsSearch	            1
+ParadigmaDocsDelete	            1
+ParadigmaDocsSearchAndReplace	    1
+
